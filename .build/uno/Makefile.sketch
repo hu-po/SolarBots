@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/uno/src/sketch.cpp : src/sketch.pde
+	@mkdir -p .build/uno/src
+	@echo [93msrc/sketch.pde[0m
+	@/usr/local/bin/ino preproc  -o $@ $^
+
+
+all : .build/uno/src/sketch.cpp
+	@true
+
