@@ -1,5 +1,6 @@
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
+import datetime
 
  
 def connect():
@@ -24,8 +25,11 @@ def connect():
         print('Connection closed.')
  
 def insert_data(data):
-    query = "INSERT INTO data(data_type, data_name, value, time_string, timestamp) " \
-            "VALUES(%s,%s, %d, %s, %d)"
+
+    # Table info: SensorData(sensorType varchar(255), sensorNum int, reading int, Date DATETIME(6))
+
+    query = "INSERT INTO SensorData(sensorType, sensorNum, reading, date) " \
+            "VALUES(%s, %d, %d, %s)"
  
     try:
         db_config = read_db_config()
@@ -67,9 +71,9 @@ def query_commands():
 def main():
     connect()
 
-    data = [('raw', 'test_data', 1.0, '2015-09-23', 100000),
-            ('raw', 'test_data', 2.0, '2015-09-23', 100000),
-            ('raw', 'test_data', 3.0, '2015-09-23', 100000)]
+    data = [('test', 1, 10.0, datetime.datetime.now()),
+            ('test', 1, 10.0, datetime.datetime.now()),
+            ('test', 1, 10.0, datetime.datetime.now())]
 
     insert_data(data)
 
