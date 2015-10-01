@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import serial
 import numpy as np
+import datetime
 from python_mysql_connect import connect, insert_data, query_commands
 
 from time import sleep
@@ -149,11 +150,19 @@ def main():
 
     for i in range(0, MAX_ITER):
 
-        # Read and Smooth data from sensor
-        data = smoothData(readData())
+        # Read in raw data from sensors
+        raw_data = readData()
+
+        # Smooth raw data from sensors
+        smooth_data = smoothData(raw_data)
 
         # Write data to MySQL
-        insert_data(data)
+        insert_data( ('HC-SR04', 1, smooth_data(0) , datetime.datetime.now()) ) # Sonar 1
+        insert_data( ('HC-SR04', 2, smooth_data(1) , datetime.datetime.now()) ) # Sonar 2
+        insert_data( ('HC-SR04', 3, smooth_data(2) , datetime.datetime.now()) ) # Sonar 3
+        insert_data( ('TSL2561', 1, smooth_data(3) , datetime.datetime.now()) ) # TSL2561 1
+        insert_data( ('TSL2561', 2, smooth_data(4) , datetime.datetime.now()) ) # TSL2561 2
+        insert_data( ('TSL2561', 3, smooth_data(5) , datetime.datetime.now()) ) # TSL2561 3
 
         # Get commands from MySQL and execute
         execute(query_commands())
