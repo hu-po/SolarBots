@@ -24,7 +24,7 @@ def connect():
         conn.close()
         print('Connection closed.')
  
-def insert_data(data):
+def insert_sensor_data(data):
 
     # Table info: SensorData(sensorType varchar(255), sensorNum int, reading int, Date DATETIME(6))
 
@@ -75,7 +75,7 @@ def main():
             ('test', 1, 10.0, datetime.datetime.now()),
             ('test', 1, 10.0, datetime.datetime.now())]
 
-    insert_data(data)
+    insert_sensor_data(data)
 
     query_commands()
  
