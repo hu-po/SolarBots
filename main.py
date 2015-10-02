@@ -2,7 +2,7 @@
 import serial
 import numpy as np
 import datetime
-from python_mysql_connect import connect, insert_data, query_commands
+from python_mysql_connect import connect, insert_sensor_data, query_commands
 import motor
 
 # Serial communication with Arduino
@@ -74,10 +74,10 @@ def main():
 
         # Write data to MySQL
         for j in range(0, NUM_SONAR)
-            insert_data( ('HC-SR04', j, smooth_data(j) , datetime.datetime.now()) ) # HC-SR04 Sensor
+            insert_sensor_data( ('HC-SR04', j, smooth_data(j) , datetime.datetime.now()) ) # HC-SR04 Sensor
 
         for j in range(0, NUM_LIGHT)
-            insert_data( ('TSL2561', j, smooth_data(NUM_SONAR + j) , datetime.datetime.now()) ) # TSL2561 Sensor
+            insert_sensor_data( ('TSL2561', j, smooth_data(NUM_SONAR + j) , datetime.datetime.now()) ) # TSL2561 Sensor
 
         # Get commands from MySQL and execute
         execute(query_commands())
