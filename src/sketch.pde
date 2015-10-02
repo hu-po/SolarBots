@@ -52,6 +52,7 @@ void loop() {
   }
  sonarSensorCycle();
  lumSensorCycle();
+ Serial.println();  // New line to indicate end of sensing cycle
 }
 
 void echoCheck() { // If ping received, set the sensor distance to array.
@@ -71,7 +72,7 @@ void lumSensorCycle() { // Get & Print Light sensor readings
 
  Serial.print(tsl_1.getLuminosity(TSL2561_INFRARED)); Serial.print(",");
  Serial.print(tsl_2.getLuminosity(TSL2561_INFRARED)); Serial.print(",");
- Serial.print(tsl_3.getLuminosity(TSL2561_INFRARED)); Serial.println();
+ Serial.print(tsl_3.getLuminosity(TSL2561_INFRARED));
 
 }
 
