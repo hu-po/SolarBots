@@ -23,6 +23,7 @@ GPIO.setup(Motor2A, GPIO.OUT)
 GPIO.setup(Motor2B, GPIO.OUT)
 GPIO.setup(Motor2E, GPIO.OUT)
 
+
 def moveBot(direction, distance):
 
     if direction == 'forward':
@@ -90,8 +91,8 @@ def moveBot(direction, distance):
 
 def main():
 
-        moveBot('forward', 1)  # Move forward 1 unit (10 cm)
-        moveBot('turnleft', 1)  # Make one complete turn
-        
+    moveBot('forward', 1)  # Move forward 1 unit (10 cm)
+    moveBot('turnleft', 1)  # Make one complete turn
+
 if __name__ == '__main__':
     main()
