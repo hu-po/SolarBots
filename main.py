@@ -14,6 +14,7 @@ NUM_SONAR = 3  # Number of sonar sensors
 NUM_LIGHT = 3   # Number of light sensors
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
 
+
 def sample():
     # print ser.readline()
     return ser.readline().split(',')
@@ -43,11 +44,12 @@ def smoothData(data):
     # Simple median smoothing
     for i in range(0, NUM_SONAR + NUM_LIGHT):
 
-        data_smooth[i] = np.median(data[:,i])
+        data_smooth[i] = np.median(data[:, i])
 
     # TODO: More ridiculous smoothing
 
     return data_smooth
+
 
 def execute(commands):
     print "Executing commands from database ... "
@@ -73,16 +75,18 @@ def main():
         smooth_data = smoothData(raw_data)
 
         # Write data to MySQL
-        for j in range(0, NUM_SONAR)
-            insert_sensor_data( ('HC-SR04', j, smooth_data(j) , datetime.datetime.now()) ) # HC-SR04 Sensor
+        for j in range(0, NUM_SONAR):
+            # HC-SR04 Sensor
+            insert_sensor_data(('HC-SR04', j, smooth_data(j), datetime.datetime.now()))
 
-        for j in range(0, NUM_LIGHT)
-            insert_sensor_data( ('TSL2561', j, smooth_data(NUM_SONAR + j) , datetime.datetime.now()) ) # TSL2561 Sensor
+        for j in range(0, NUM_LIGHT):
+            # TSL2561 Sensor
+            insert_sensor_data(('TSL2561', j, smooth_data(NUM_SONAR + j), datetime.datetime.now()))
 
         # Get commands from MySQL and execute
         execute(query_commands())
 
-        moveBot('forward', 1)  # Move forward 1 unit (10 cm)
-        moveBot('turnleft', 1)  # Make one complete turn
+        motor.moveBot('forward', 1)  # Move forward 1 unit (10 cm)
+        motor.moveBot('turnleft', 1)  # Make one complete turn
 
     print "Exited main loop ..."

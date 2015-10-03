@@ -7,17 +7,17 @@ import visualize
 # Connect to databse
 connect()
 
-# Querry raw sensor data 
+# Querry raw sensor data
 
 query_raw_sensor_data()
 
 # Querry raw robot position data
 
-query_raw_pos_data() 
+query_raw_pos_data()
 
-# Combine both 
+# Combine both
 # TODO: need to make a table with sensor data relative to robot, preferrably filtered
 
 # Insert into database
 
-# Visualize 
+# Visualize
