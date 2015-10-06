@@ -2,8 +2,9 @@
 import serial
 import numpy as np
 import datetime
-from python_mysql_connect import connect, insert_sensor_data, query_commands
+from python_mysql_connect import connect, insert_sensor_data, insert_current_pos, query_current_pos
 import motor
+# import maptool
 
 # Serial communication with Arduino
 ser = serial.Serial('/dev/ttyACM0',  9600)
@@ -17,17 +18,12 @@ MOTOR_PWR = 30  # 0 - 100 speed of motor
 
 
 def sample():
-
     points = []
-
     while len(points) != 6:
         points = ser.readline().strip().split(',')
-
-        print points
-        print len(points)
-
-        print "garbage"
-
+        #print points
+        #print len(points)
+        #print "garbage"
     return points
 
 
@@ -41,7 +37,6 @@ def readData():
     for i in range(0, DATA_SAMPLE_SIZE):
 
         # print data(i,:)
-
         data[i, :] = sample()
 
     return data
@@ -64,22 +59,16 @@ def smoothData(data):
     return data_smooth
 
 
-def execute(commands):
-    print "Executing commands from database ... "
+def explore():
+    print "Exploring current location ..."
 
-    return
+    # Perform exploration movement
+    motor.moveBot('forward', 1, MOTOR_PWR)  # Move forward 1 unit (10 cm)
 
+    # Initialize exploration results matrix
+    explore_results = []
 
-def main():
-
-    print "Connecting to database ..."
-
-    # Connect to MySQL database
-    # connect()
-
-    print "Starting main loop ..."
-
-    for i in range(0, MAX_ITER):
+    for i in range(0, EXPLORE_ITER)
 
         # Read in raw data from sensors
         raw_data = readData()
@@ -99,13 +88,47 @@ def main():
         # TSL2561 Sensor
         #     insert_sensor_data(('TSL2561', j, smooth_data(NUM_SONAR + j), datetime.datetime.now()))
 
-        # Get commands from MySQL and execute
-        # execute(query_commands())
+        # Store smooth data in exploration results matrix
+        explore_results[i, :] = smooth_data
 
-        motor.moveBot('forward', 1, MOTOR_PWR)  # Move forward 1 unit (10 cm)
-        motor.moveBot('turnleft', 1, MOTOR_PWR)  # Make one complete turn
+        # Rotate robot to get another set of data
+        motor.moveBot('turnleft', 45, MOTOR_PWR)  # Make a 45 degree turn
+
+    return explore_results
+
+
+def main():
+
+    print "Connecting to database ..."
+    # connect()
+
+    print "Starting motor GPIO connection ..."
+    motor.start()
+
+    print "Downloading latest map from database ..."
+    # maptool.update_map()
+
+    print "Starting main loop ..."
+
+    for i in range(0, MAX_ITER):
+
+        # Get current robot pose from database
+        curr_pos = query_current_pos()
+
+        # Explore (get dataset of points)
+        scan = explore()
+
+        # Use current position and explore dataset to determine new location
+        # SLAM(scan, curr_pos)
+
+        # Push new robot pose to database
+
+        # Push new map data to database
 
     print "Exited main loop ..."
+
+    print "Clean up motor GPIO ..."
+    motor.clean()
 
 if __name__ == '__main__':
     main()
