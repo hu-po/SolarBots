@@ -4,7 +4,8 @@ import numpy as np
 import datetime
 from python_mysql_connect import connect, insert_sensor_data, insert_current_pos, query_current_pos
 import motor
-# import maptool
+import maptool
+import slam
 
 # Serial communication with Arduino
 ser = serial.Serial('/dev/ttyACM0',  9600)
@@ -15,7 +16,8 @@ NUM_SONAR = 3  # Number of sonar sensors
 NUM_LIGHT = 3   # Number of light sensors
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
 MOTOR_PWR = 30  # 0 - 100 speed of motor
-
+EXPLORE_ITER = 4 # Number of sensor readings in an explore scan
+FOG_RADIUS = 100 # Radius of section of map to use (centered around current position) for SLAM
 
 def sample():
     points = []
@@ -119,11 +121,10 @@ def main():
         scan = explore()
 
         # Use current position and explore dataset to determine new location
-        # SLAM(scan, curr_pos)
+        # curr_pos = slamfunc(scan, curr_pos, FOG_RADIUS)
 
         # Push new robot pose to database
-
-        # Push new map data to database
+        insert_current_pos(curr_pos)
 
     print "Exited main loop ..."
 
