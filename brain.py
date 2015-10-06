@@ -19,6 +19,21 @@ MOTOR_PWR = 30  # 0 - 100 speed of motor
 EXPLORE_ITER = 4 # Number of sensor readings in an explore scan
 FOG_RADIUS = 100 # Radius of section of map to use (centered around current position) for SLAM
 
+# Position of sensors relative to robot frame (in cm)
+TSL2561_1_x = - 8.23
+TSL2561_1_y = 4.75
+TSL2561_2_x = 8.23
+TSL2561_2_y = 4.75
+TSL2561_3_x = 0
+TSL2561_3_y = - 9.5
+HCSR04_1_x = 0
+HCSR04_1_y = 6
+HCSR04_2_x = 9.5
+HCSR04_2_y = 0
+HCSR04_3_x = - 9.5
+HCSR04_3_y = 0
+
+
 def sample():
     points = []
     while len(points) != 6:
