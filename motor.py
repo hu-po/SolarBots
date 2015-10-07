@@ -18,30 +18,21 @@ Motor2A = 15
 Motor2B = 13
 Motor2E = 11
 
+   # Setup motor pin output
+GPIO.setup(Motor1A, GPIO.OUT)
+GPIO.setup(Motor1B, GPIO.OUT)
+GPIO.setup(Motor1E, GPIO.OUT)
+GPIO.setup(Motor2A, GPIO.OUT)
+GPIO.setup(Motor2B, GPIO.OUT)
+GPIO.setup(Motor2E, GPIO.OUT)
 
-def start():
-
-    # Setup motor pin output
-    GPIO.setup(Motor1A, GPIO.OUT)
-    GPIO.setup(Motor1B, GPIO.OUT)
-    GPIO.setup(Motor1E, GPIO.OUT)
-    GPIO.setup(Motor2A, GPIO.OUT)
-    GPIO.setup(Motor2B, GPIO.OUT)
-    GPIO.setup(Motor2E, GPIO.OUT)
-
-    # Output low signal
-    GPIO.output(Motor1A, GPIO.LOW)
-    GPIO.output(Motor1B, GPIO.LOW)
-    GPIO.output(Motor1E, GPIO.LOW)
-    GPIO.output(Motor2A, GPIO.LOW)
-    GPIO.output(Motor2B, GPIO.LOW)
-    GPIO.output(Motor2E, GPIO.LOW)
-
-    # Initialize PWM for  both motors
-    E1 = GPIO.PWM(Motor1E, 100)
-    E2 = GPIO.PWM(Motor2E, 100)
-
-    return
+# Output low signal
+GPIO.output(Motor1A, GPIO.LOW)
+GPIO.output(Motor1B, GPIO.LOW)
+GPIO.output(Motor1E, GPIO.LOW)
+GPIO.output(Motor2A, GPIO.LOW)
+GPIO.output(Motor2B, GPIO.LOW)
+GPIO.output(Motor2E, GPIO.LOW)
 
 
 # Change speed of motor by controlling duty cycle
@@ -52,6 +43,10 @@ def start():
 
 
 def moveBot(direction, distance, num):
+
+    # Initialize PWM for  both motors
+    E1 = GPIO.PWM(Motor1E, 100)
+    E2 = GPIO.PWM(Motor2E, 100)
 
     # Start both sowftware PWMs
     E1.start(num)
@@ -118,11 +113,13 @@ def moveBot(direction, distance, num):
 
     return
 
-def clean(): # Cleanup GPIO output
+
+def clean():  # Cleanup GPIO output
     E1.stop()
     E2.stop()
     GPIO.cleanup()
     return
+
 
 def main():
 
