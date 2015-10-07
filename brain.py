@@ -16,8 +16,8 @@ NUM_SONAR = 3  # Number of sonar sensors
 NUM_LIGHT = 3   # Number of light sensors
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
 MOTOR_PWR = 30  # 0 - 100 speed of motor
-EXPLORE_ITER = 4 # Number of sensor readings in an explore scan
-FOG_RADIUS = 100 # Radius of section of map to use (centered around current position) for SLAM
+EXPLORE_ITER = 4  # Number of sensor readings in an explore scan
+FOG_RADIUS = 100  # Radius of section of map to use (centered around current position) for SLAM
 
 # Position of sensors relative to robot frame (in cm)
 TSL2561_1_x = - 8.23
@@ -38,9 +38,10 @@ def sample():
     points = []
     while len(points) != 6:
         points = ser.readline().strip().split(',')
-        #print points
-        #print len(points)
-        #print "garbage"
+        # print points
+        # print len(points)
+        # print "garbage"
+    print points
     return points
 
 
@@ -64,11 +65,14 @@ def smoothData(data):
     print "Smoothing data ..."
 
     # Create empty data array to store smooth data
-    data_smooth = np.empty([1, NUM_SONAR + NUM_LIGHT])
+    data_smooth = np.empty([NUM_SONAR + NUM_LIGHT, 1])
 
     # Simple median smoothing
     for i in range(0, NUM_SONAR + NUM_LIGHT):
-
+        print i
+        print data_smooth[i]
+        print data[:, i]
+        print np.median(data[:, i])
         data_smooth[i] = np.median(data[:, i])
 
     # TODO: More ridiculous smoothing
@@ -83,9 +87,9 @@ def explore():
     motor.moveBot('forward', 1, MOTOR_PWR)  # Move forward 1 unit (10 cm)
 
     # Initialize exploration results matrix
-    explore_results = []
+    explore_results = np.empty([EXPLORE_ITER, 1])
 
-    for i in range(0, EXPLORE_ITER)
+    for i in range(0, EXPLORE_ITER):
 
         # Read in raw data from sensors
         raw_data = readData()
@@ -117,10 +121,7 @@ def explore():
 def main():
 
     print "Connecting to database ..."
-    # connect()
-
-    print "Starting motor GPIO connection ..."
-    motor.start()
+    connect()
 
     print "Downloading latest map from database ..."
     # maptool.update_map()
