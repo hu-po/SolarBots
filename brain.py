@@ -105,13 +105,15 @@ def explore():
         print smooth_data
 
         # Write data to MySQL
-        # for j in range(0, NUM_SONAR):
+        for j in range(0, NUM_SONAR):
         # HC-SR04 Sensor
-        #     insert_sensor_data(('HC-SR04', j, smooth_data(j), datetime.datetime.now()))
+            print ('HC-SR04', j, smooth_data(j), datetime.datetime.now())
+            insert_sensor_data(('HC-SR04', j, smooth_data(j), datetime.datetime.now()))
 
-        # for j in range(0, NUM_LIGHT):
+        for j in range(0, NUM_LIGHT):
         # TSL2561 Sensor
-        #     insert_sensor_data(('TSL2561', j, smooth_data(NUM_SONAR + j), datetime.datetime.now()))
+            print ('TSL2561', j, smooth_data(NUM_SONAR + j), datetime.datetime.now())
+            insert_sensor_data(('TSL2561', j, smooth_data(NUM_SONAR + j), datetime.datetime.now()))
 
         print explore_results[:, i]
 
