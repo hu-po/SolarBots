@@ -87,7 +87,7 @@ def moveBot(direction, distance, num):
         GPIO.output(Motor2A, GPIO.LOW)
         GPIO.output(Motor2B, GPIO.HIGH)
 
-        sleep((distance / 360) * SEC_PER_TURN)
+        sleep((distance / 360.0) * SEC_PER_TURN)
 
     elif direction == 'turnright':
         print "Turning Right ..."
@@ -98,7 +98,7 @@ def moveBot(direction, distance, num):
         GPIO.output(Motor2A, GPIO.HIGH)
         GPIO.output(Motor2B, GPIO.LOW)
 
-        sleep((distance / 360) * SEC_PER_TURN)
+        sleep((distance / 360.0) * SEC_PER_TURN)
 
     else:
         print "ERROR: Wrong direction input"
@@ -115,17 +115,27 @@ def moveBot(direction, distance, num):
 
 
 def clean():  # Cleanup GPIO output
-    E1.stop()
-    E2.stop()
     GPIO.cleanup()
-    return
 
 
 def main():
 
-    start()
+    sleep(1)
+
     moveBot('forward', 1, MOTOR_DEFAULT_PWR)  # Move forward 1 unit (10 cm)
-    moveBot('turnleft', 360, MOTOR_DEFAULT_PWR)  # Make one complete turn
+
+    sleep(1)
+
+    moveBot('turnleft', 90, MOTOR_DEFAULT_PWR)  # Make one complete turn
+
+    sleep(1)
+
+    moveBot('forward', 1, MOTOR_DEFAULT_PWR)
+
+    sleep(1)
+
+    moveBot('turnright', 90, MOTOR_DEFAULT_PWR)
+
     clean()
 
 if __name__ == '__main__':

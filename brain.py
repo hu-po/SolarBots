@@ -36,11 +36,13 @@ HCSR04_3_y = 0
 
 def sample():
     points = []
+    points = filter('', points)
     while len(points) != 6:
         points = ser.readline().strip().split(',')
         # print points
         # print len(points)
         # print "garbage"
+
     print points
     return points
 
@@ -69,10 +71,10 @@ def smoothData(data):
 
     # Simple median smoothing
     for i in range(0, NUM_SONAR + NUM_LIGHT):
-        print i
-        print data_smooth[i]
-        print data[:, i]
-        print np.median(data[:, i])
+        # print i
+        # print data_smooth[i]
+        # print data[:, i]
+        # print np.median(data[:, i])
         data_smooth[i] = np.median(data[:, i])
 
     # TODO: More ridiculous smoothing
@@ -87,7 +89,9 @@ def explore():
     motor.moveBot('forward', 1, MOTOR_PWR)  # Move forward 1 unit (10 cm)
 
     # Initialize exploration results matrix
-    explore_results = np.empty([EXPLORE_ITER, 1])
+    explore_results = np.empty([NUM_SONAR + NUM_LIGHT, EXPLORE_ITER])
+
+    print explore_results
 
     for i in range(0, EXPLORE_ITER):
 
@@ -109,8 +113,10 @@ def explore():
         # TSL2561 Sensor
         #     insert_sensor_data(('TSL2561', j, smooth_data(NUM_SONAR + j), datetime.datetime.now()))
 
+        print explore_results[:, i]
+
         # Store smooth data in exploration results matrix
-        explore_results[i, :] = smooth_data
+        explore_results[:, i] = smooth_data.flatten()
 
         # Rotate robot to get another set of data
         motor.moveBot('turnleft', 45, MOTOR_PWR)  # Make a 45 degree turn
