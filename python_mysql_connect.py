@@ -29,7 +29,9 @@ def insert_sensor_data(data):
 
     # Table info: SensorData(sensorType varchar(255), sensorNum int, reading int, Date DATETIME(6))
 
-    query = """INSERT INTO SensorData(SensorType, SensorNum, Reading, Date) VALUES(%s, %s, %s, %s)"""
+    query = ("INSERT INTO SensorData "
+                "(SensorType, SensorNum, Reading, Date)"
+                " VALUES(%s, %s, %s, %s)")
 
     try:
         db_config = read_db_config()
@@ -51,7 +53,9 @@ def insert_current_pos(data):
 
     # Table info: SensorData(sensorType varchar(255), sensorNum int, reading int, Date DATETIME(6))
 
-    query = """INSERT INTO Localization(Source, X_pos, Y_pos, Theta) VALUES(%s, %s, %s, %s)"""
+    query = ("INSERT INTO Localization"
+                "(Source, X_pos, Y_pos, Theta)"
+                " VALUES(%s, %s, %s, %s)")
 
     try:
         db_config = read_db_config()
