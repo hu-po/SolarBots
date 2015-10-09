@@ -103,6 +103,9 @@ def explore():
 
         print raw_data
         print smooth_data
+        print smooth_data.tolist()
+
+        smooth_data = smooth_data.tolist()
 
         # Write data to MySQL
         for j in range(0, NUM_SONAR):
