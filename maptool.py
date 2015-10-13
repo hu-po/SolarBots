@@ -1,6 +1,11 @@
+# Author: Hugo P.
+# Project: https://github.com/HugoCMU/SolarTree
+# Description: Contains functions to get and update the map
+
 import numpy as np
 import datetime
 from python_mysql_connect import connect, query_map
+from brain import FOG_RADIUS
 
 
 def update_map():  # Downloads map from database and writes it to local file
@@ -15,7 +20,7 @@ def update_map():  # Downloads map from database and writes it to local file
     # http://stackoverflow.com/questions/3685265/how-to-write-a-multidimensional-array-to-a-text-file
 
 
-def get_map(pos, fog):
+def get_map(pos):
 
     # Read local xml file containing map
     mapa = np.loadtxt('map.txt')

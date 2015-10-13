@@ -1,25 +1,47 @@
+# Author: Hugo P.
+# Project: https://github.com/HugoCMU/SolarTree
+# Description: Definitions for all parameters, runs/calls all other functions
 
 import serial
 import numpy as np
 import datetime
-from python_mysql_connect import connect, insert_sensor_data, insert_current_pos, query_current_pos
-import motor
-import maptool
-import slam
+from python_mysql_connect import connect, insert_current_pos, query_current_pos
+from motor import clean
+from maptool import update_map
+from slam import slamfunc
+from kalmanfilter import kalman
+from navigation import navigate, explore
 
 # Serial communication with Arduino
 ser = serial.Serial('/dev/ttyACM0',  9600)
 
-# Define constants
+# Define Navigation Parameters
 DATA_SAMPLE_SIZE = 3   # Sample size for data (increase to stabilize at cost of speed)
 NUM_SONAR = 3  # Number of sonar sensors
 NUM_LIGHT = 3   # Number of light sensors
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
 MOTOR_PWR = 30  # 0 - 100 speed of motor
 EXPLORE_ITER = 4  # Number of sensor readings in an explore scan
-FOG_RADIUS = 100  # Radius of section of map to use (centered around current position) for SLAM
+EXPLORE_ANGLE = 360.0 # Angle to explore during an explore scan
 
-# Position of sensors relative to robot frame (in cm)
+# Define SLAM Parameters (distance/angle perturbations)
+FOG_RADIUS = 100  # Radius of section of map to use (centered around current position) for SLAM
+RAND_DIST_MU = 0 # Center of distribution (cm)
+RAND_DIST_SIGMA = 1 # Standard deviation (cm)
+RAND_ANG_MU = 0 # Degrees
+RAND_ANG_SIGMA = 10 # Degrees
+RAND_NUM = 10 # Number of random samples
+
+# Define Kalman Filter Parameters
+OBSERVATION_NOISE = 0.1
+
+# Define Motor Parameters
+SEC_PER_TURN = 10   # Seconds required to complete one full turn
+SEC_PER_MOVE = 1  # Seconds required to move 10cm
+MOTOR_DEFAULT_PWR = 30  # Default starting power for the motor
+MOTOR_OFFSET_PWR = -1  # Difference between Motor 1 and Motor 2
+
+# Define Position of sensors relative to robot frame (in cm)
 TSL2561_1_x = - 8.23
 TSL2561_1_y = 4.75
 TSL2561_2_x = 8.23
@@ -33,108 +55,13 @@ HCSR04_2_y = 0
 HCSR04_3_x = - 9.5
 HCSR04_3_y = 0
 
-
-def sample():
-    points = []
-    points = filter('', points)
-    while len(points) != 6:
-        points = ser.readline().strip().split(',')
-        # print points
-        # print len(points)
-        # print "garbage"
-
-    print points
-    return points
-
-
-def readData():
-    print "Reading data ..."
-
-    # Create empty data array to store data
-    data = np.empty([DATA_SAMPLE_SIZE, (NUM_SONAR + NUM_LIGHT)])
-
-    # Populate empty data array
-    for i in range(0, DATA_SAMPLE_SIZE):
-
-        # print data(i,:)
-        data[i, :] = sample()
-
-    return data
-
-
-def smoothData(data):
-
-    print "Smoothing data ..."
-
-    # Create empty data array to store smooth data
-    data_smooth = np.empty([NUM_SONAR + NUM_LIGHT, 1])
-
-    # Simple median smoothing
-    for i in range(0, NUM_SONAR + NUM_LIGHT):
-        # print i
-        # print data_smooth[i]
-        # print data[:, i]
-        # print np.median(data[:, i])
-        data_smooth[i] = np.median(data[:, i])
-
-    # TODO: More ridiculous smoothing
-
-    return data_smooth
-
-
-def explore():
-    print "Exploring current location ..."
-
-    # Perform exploration movement
-    motor.moveBot('forward', 1, MOTOR_PWR)  # Move forward 1 unit (10 cm)
-
-    # Initialize exploration results matrix
-    explore_results = np.empty([NUM_SONAR + NUM_LIGHT, EXPLORE_ITER])
-
-    print explore_results
-
-    for i in range(0, EXPLORE_ITER):
-
-        # Read in raw data from sensors
-        raw_data = readData()
-
-        # Smooth raw data from sensors
-        smooth_data = smoothData(raw_data)
-
-        print raw_data
-        print smooth_data
-        print smooth_data.tolist()
-
-        smooth_data = smooth_data.tolist()
-
-        # Write data to MySQL
-        for j in range(0, NUM_SONAR):
-        # HC-SR04 Sensor
-            #print 'HC-SR04'
-            #print j
-            #print smooth_data[j]
-            #print datetime.datetime.now()
-            insert_sensor_data(('HC-SR04', j, smooth_data[j], datetime.datetime.now()))
-
-        for j in range(0, NUM_LIGHT):
-            #print 'TSL2561'
-            #print NUM_SONAR + j
-            #print smooth_data[NUM_SONAR + j]
-            #print datetime.datetime.now()
-
-        # TSL2561 Sensor
-            insert_sensor_data(('TSL2561', j, smooth_data[NUM_SONAR + j], datetime.datetime.now()))
-
-        print explore_results[:, i]
-
-        # Store smooth data in exploration results matrix
-        explore_results[:, i] = smooth_data.flatten()
-
-        # Rotate robot to get another set of data
-        motor.moveBot('turnleft', 45, MOTOR_PWR)  # Make a 45 degree turn
-
-    return explore_results
-
+# Define motor pins
+Motor1A = 16
+Motor1B = 18
+Motor1E = 22
+Motor2A = 15
+Motor2B = 13
+Motor2E = 11
 
 def main():
 
@@ -142,7 +69,7 @@ def main():
     connect()
 
     print "Downloading latest map from database ..."
-    # maptool.update_map()
+    # update_map()
 
     print "Starting main loop ..."
 
@@ -151,11 +78,22 @@ def main():
         # Get current robot pose from database
         curr_pos = query_current_pos()
 
+        # Move robot to new position based on current position and sensor input
+        curr_input = navigate(curr_pos)
+
         # Explore (get dataset of points)
         scan = explore()
 
         # Use current position and explore dataset to determine new location
-        # curr_pos = slamfunc(scan, curr_pos, FOG_RADIUS)
+        curr_pos_slam = slamfunc(scan, curr_pos)
+
+        # Feed SLAM estimate of position into Kalman Filter
+        curr_pos_filter = kalman(curr_pos, curr_meas=curr_pos_slam, curr_input)
+
+        # print curr_pos # Last known filtered state of robot
+        # print curr_meas # Current approximate state of robot
+        # print curr_input # Input vector which was inputed since last known state
+        # print curr_pos_filter # New filtered state of robot
 
         # Push new robot pose to database
         insert_current_pos(curr_pos)
@@ -163,7 +101,7 @@ def main():
     print "Exited main loop ..."
 
     print "Clean up motor GPIO ..."
-    motor.clean()
+    GPIOclean()
 
 if __name__ == '__main__':
     main()
