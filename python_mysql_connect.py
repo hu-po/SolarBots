@@ -1,3 +1,7 @@
+# Author: Hugo P.
+# Project: https://github.com/HugoCMU/SolarTree
+# Description: Contains functions for inserting/querring data from MySQL database
+
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 import datetime

@@ -1,24 +1,15 @@
+# Author: Hugo P.
+# Project: https://github.com/HugoCMU/SolarTree
+# Description: Contains all the low level motor/move functions for the robot
+
 from time import sleep
 import RPi.GPIO as GPIO
+from brain import SEC_PER_TURN, SEC_PER_MOVE, MOTOR_DEFAULT_PWR, MOTOR_OFFSET_PWR, Motor1A, Motor1B, Motor1E, Motor2A, Motor2B, Motor2E
 
 GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 
-# Define constants
-SEC_PER_TURN = 10   # Seconds required to complete one full turn
-SEC_PER_MOVE = 1  # Seconds required to move 10cm
-MOTOR_DEFAULT_PWR = 30  # Default starting power for the motor
-MOTOR_OFFSET_PWR = -1  # Difference between Motor 1 and Motor 2
-
-# Define motor pins
-Motor1A = 16
-Motor1B = 18
-Motor1E = 22
-Motor2A = 15
-Motor2B = 13
-Motor2E = 11
-
-   # Setup motor pin output
+# Setup motor pin output
 GPIO.setup(Motor1A, GPIO.OUT)
 GPIO.setup(Motor1B, GPIO.OUT)
 GPIO.setup(Motor1E, GPIO.OUT)
@@ -114,7 +105,7 @@ def moveBot(direction, distance, num):
     return
 
 
-def clean():  # Cleanup GPIO output
+def GPIOclean():  # Cleanup GPIO output
     GPIO.cleanup()
 
 
@@ -126,7 +117,7 @@ def main():
 
     sleep(1)
 
-    moveBot('turnleft', 90, MOTOR_DEFAULT_PWR)  # Make one complete turn
+    moveBot('turnleft', 90, MOTOR_DEFAULT_PWR)  # Make a 90 degree turn
 
     sleep(1)
 
