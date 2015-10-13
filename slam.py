@@ -1,18 +1,16 @@
+# Author: Hugo P.
+# Project: https://github.com/HugoCMU/SolarTree
+# Description: Determines location of robot using pointcloud matching (from sonar sensors)
+
 import numpy as np
 import maptool
 from python_mysql_connect import connect, insert_current_pos, query_current_pos
+from brain import RAND_DIST_MU, RAND_DIST_SIGMA, RAND_ANG_MU, RAND_ANG_SIGMA, RAND_NUM
 
-# Define parameters for distance/angle perturbations
-RAND_DIST_MU = 0 # Center of distribution (cm)
-RAND_DIST_SIGMA = 1 # Standard deviation (cm)
-RAND_ANG_MU = 0 # Degrees
-RAND_ANG_SIGMA = 10 # Degrees
-RAND_NUM = 10 # Number of random samples
-
-def slamfunc(scan, curr_pos, fog):
+def slamfunc(scan, curr_pos):
 
     # Get local map
-    mapa = maptool.get_map(curr_pos, fog)
+    mapa = maptool.get_map(curr_pos)
 
     # Generate perturbations from normal distribution
     pos_perturb = np.random.normal(RAND_DIST_MU, RAND_DIST_SIGMA, 2*RAND_NUM).reshape(2, RAND_NUM)
@@ -50,13 +48,6 @@ def slamfunc(scan, curr_pos, fog):
     maptool.add_to_map(scan)
 
     return curr_pos
-
-
-def navigate():
-    # given a position? find somewhere to move which makes sense?
-    # Somehow break these down into motion primitives?
-
-    return
 
 
 def main():

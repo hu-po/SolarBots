@@ -1,3 +1,7 @@
+# Author: Hugo P.
+# Project: https://github.com/HugoCMU/SolarTree
+# Description: Connects to MySQL database using config.ini file
+
 from configparser import ConfigParser
 
 
