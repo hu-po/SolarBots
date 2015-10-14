@@ -7,6 +7,7 @@ from brain import EXPLORE_ANGLE, EXPLORE_ITER, MOTOR_PWR, NUM_SONAR, NUM_LIGHT, 
 from motor import moveBot
 import numpy as np
 import datetime
+import maptool
 from python_mysql_connect import insert_sensor_data, insert_current_pos, query_current_pos
 
 

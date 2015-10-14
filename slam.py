@@ -7,17 +7,26 @@ import maptool
 from python_mysql_connect import connect, insert_current_pos, query_current_pos
 from brain import RAND_DIST_MU, RAND_DIST_SIGMA, RAND_ANG_MU, RAND_ANG_SIGMA, RAND_NUM
 import pcl
+from pcl.registration import icp, gicp, icp_nl
+
 
 # Create map
 # TODO: python pcl
 
 def slamfunc(scan, curr_pos):
 
-    # Get local map
-    # mapa = maptool.get_map(curr_pos)
+    # Convert scan to points
+    scanpc = scan_to_points(scan)
 
     # Get map
-    mapa = pcl.load("map.pcd")
+    mapa = maptool.get_map()
+
+    # Define best-guess transform using curr_pos
+
+    # Use ICP to get true transform
+
+    # Convert true transform into curr_pos format
+    # pos_to_transform()
 
     # Generate perturbations from normal distribution
     pos_perturb = np.random.normal(RAND_DIST_MU, RAND_DIST_SIGMA, 2 * RAND_NUM).reshape(2, RAND_NUM)

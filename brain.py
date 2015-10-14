@@ -10,8 +10,8 @@ ser = serial.Serial('/dev/ttyACM0',  9600)
 
 # Define Navigation Parameters
 DATA_SAMPLE_SIZE = 3   # Sample size for data (increase to stabilize at cost of speed)
-NUM_SONAR = 3  # Number of sonar sensors
-NUM_LIGHT = 3   # Number of light sensors
+NUM_SONAR = 3  # Number of sonar sensors #TODO: figure this out based on SENSOR_POS
+NUM_LIGHT = 3   # Number of light sensors #TODO: figure this out based on SENSOR_POS
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
 MOTOR_PWR = 30  # 0 - 100 speed of motor
 EXPLORE_ITER = 4  # Number of sensor readings in an explore scan
@@ -35,18 +35,13 @@ MOTOR_DEFAULT_PWR = 30  # Default starting power for the motor
 MOTOR_OFFSET_PWR = -1  # Difference between Motor 1 and Motor 2
 
 # Define Position of sensors relative to robot frame (in cm)
-TSL2561_1_x = - 8.23
-TSL2561_1_y = 4.75
-TSL2561_2_x = 8.23
-TSL2561_2_y = 4.75
-TSL2561_3_x = 0
-TSL2561_3_y = - 9.5
-HCSR04_1_x = 0
-HCSR04_1_y = 6
-HCSR04_2_x = 9.5
-HCSR04_2_y = 0
-HCSR04_3_x = - 9.5
-HCSR04_3_y = 0
+# [Sensor Name, Sensor Number, X location, Y location, Z location, Mask X, Mask Y, Mask Z]
+SENSOR_POS = [['HC-SR04', 1,    0,    6,  0, 1,  0,  0],
+              ['HC-SR04', 2,  9.5,    0,  0, 0, -1,  0],
+              ['HC-SR04', 3, -9.5,    0,  0, 0,  1,  0],
+              ['TSL2561', 1, -8.2, 4.75,  0, 0,  0, -1],
+              ['TSL2561', 2,  8.2, 4.75,  0, 0,  0, -1],
+              ['TSL2561', 3,    0, -9.5,  0, 0,  0, -1]]
 
 # Define motor pins
 Motor1A = 16
@@ -63,7 +58,7 @@ def main():
 
     from python_mysql_connect import connect, insert_current_pos, query_current_pos
     from motor import GPIOclean
-    from maptool import update_map
+    from maptool import pull_map
     from slam import slamfunc
     from kalmanfilter import kalman
     from navigation import navigate, explore
@@ -71,8 +66,8 @@ def main():
     print "Connecting to database ..."
     connect()
 
-    print "Downloading latest map from database ..."
-    # update_map()
+    print "Downloading map from database ..."
+    pull_map()
 
     print "Starting main loop ..."
 
@@ -104,6 +99,9 @@ def main():
         insert_current_pos(curr_pos_filter)
 
     print "Exited main loop ..."
+
+    print "Pushing map to database ..."
+    push_map()
 
     print "Clean up motor GPIO ..."
     GPIOclean()
