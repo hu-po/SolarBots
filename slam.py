@@ -6,14 +6,21 @@ import numpy as np
 import maptool
 from python_mysql_connect import connect, insert_current_pos, query_current_pos
 from brain import RAND_DIST_MU, RAND_DIST_SIGMA, RAND_ANG_MU, RAND_ANG_SIGMA, RAND_NUM
+import pcl
+
+# Create map
+# TODO: python pcl
 
 def slamfunc(scan, curr_pos):
 
     # Get local map
-    mapa = maptool.get_map(curr_pos)
+    # mapa = maptool.get_map(curr_pos)
+
+    # Get map
+    mapa = pcl.load("map.pcd")
 
     # Generate perturbations from normal distribution
-    pos_perturb = np.random.normal(RAND_DIST_MU, RAND_DIST_SIGMA, 2*RAND_NUM).reshape(2, RAND_NUM)
+    pos_perturb = np.random.normal(RAND_DIST_MU, RAND_DIST_SIGMA, 2 * RAND_NUM).reshape(2, RAND_NUM)
     angle_perturb = np.random.normal(RAND_ANG_MU, RAND_ANG_SIGMA, RAND_NUM)
 
     print pos_perturb
@@ -25,20 +32,20 @@ def slamfunc(scan, curr_pos):
     # Iterate through perturbation scans
     for i in range(0, len(scan_perturb)):
 
-                    # Iterate through local map
-                    for j in range(0, len(mapa)):
+        # Iterate through local map
+        for j in range(0, len(mapa)):
 
-                            # Iterate through scan points
-                            for k in range(0, len(scan_perturb[i])):
+            # Iterate through scan points
+            for k in range(0, len(scan_perturb[i])):
 
-                                    # compare scan point with local map points
-                                    scan_perturb[i, k] 
+                # compare scan point with local map points
+                scan_perturb[i, k]
 
-                                    # TODO: This might be faster with clever matrix functions
+                # TODO: This might be faster with clever matrix functions
 
-                                    # Get score, add it to aggregate score
+                # Get score, add it to aggregate score
 
-                    # compare aggregate score to other aggregate scores
+        # compare aggregate score to other aggregate scores
                     # set lowest score to perturbation
 
     # correct current position using lowest score perturbation
