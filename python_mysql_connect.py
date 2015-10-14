@@ -77,27 +77,27 @@ def insert_current_pos(data):
         conn.close()
 
 
-def query_map():
-    try:
-        dbconfig = read_db_config()
-        conn = MySQLConnection(**dbconfig)
-        cursor = conn.cursor()
-        cursor.execute("SELECT Weight, X_pos, Y_pos FROM Map")
+# def query_map():
+#     try:
+#         dbconfig = read_db_config()
+#         conn = MySQLConnection(**dbconfig)
+#         cursor = conn.cursor()
+#         cursor.execute("SELECT Weight, X_pos, Y_pos FROM Map")
 
-        row = cursor.fetchall()
+#         row = cursor.fetchall()
 
-        while row is not None:
-            print(row)
-            row = cursor.fetchall()
+#         while row is not None:
+#             print(row)
+#             row = cursor.fetchall()
 
-    except Error as e:
-        print(e)
+#     except Error as e:
+#         print(e)
 
-    finally:
-        cursor.close()
-        conn.close()
+#     finally:
+#         cursor.close()
+#         conn.close()
 
-    return row
+#     return row
 
 
 def query_current_pos():
