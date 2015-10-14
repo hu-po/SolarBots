@@ -4,13 +4,6 @@
 
 import serial
 import numpy as np
-import datetime
-from python_mysql_connect import connect, insert_current_pos, query_current_pos
-from motor import clean
-from maptool import update_map
-from slam import slamfunc
-from kalmanfilter import kalman
-from navigation import navigate, explore
 
 # Serial communication with Arduino
 ser = serial.Serial('/dev/ttyACM0',  9600)
@@ -22,15 +15,15 @@ NUM_LIGHT = 3   # Number of light sensors
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
 MOTOR_PWR = 30  # 0 - 100 speed of motor
 EXPLORE_ITER = 4  # Number of sensor readings in an explore scan
-EXPLORE_ANGLE = 360.0 # Angle to explore during an explore scan
+EXPLORE_ANGLE = 360.0  # Angle to explore during an explore scan
 
 # Define SLAM Parameters (distance/angle perturbations)
 FOG_RADIUS = 100  # Radius of section of map to use (centered around current position) for SLAM
-RAND_DIST_MU = 0 # Center of distribution (cm)
-RAND_DIST_SIGMA = 1 # Standard deviation (cm)
-RAND_ANG_MU = 0 # Degrees
-RAND_ANG_SIGMA = 10 # Degrees
-RAND_NUM = 10 # Number of random samples
+RAND_DIST_MU = 0  # Center of distribution (cm)
+RAND_DIST_SIGMA = 1  # Standard deviation (cm)
+RAND_ANG_MU = 0  # Degrees
+RAND_ANG_SIGMA = 10  # Degrees
+RAND_NUM = 10  # Number of random samples
 
 # Define Kalman Filter Parameters
 OBSERVATION_NOISE = 0.1
@@ -63,7 +56,17 @@ Motor2A = 15
 Motor2B = 13
 Motor2E = 11
 
+
 def main():
+
+    print "Importing functions ..."
+
+    from python_mysql_connect import connect, insert_current_pos, query_current_pos
+    from motor import GPIOclean
+    from maptool import update_map
+    from slam import slamfunc
+    from kalmanfilter import kalman
+    from navigation import navigate, explore
 
     print "Connecting to database ..."
     connect()
@@ -85,10 +88,12 @@ def main():
         scan = explore()
 
         # Use current position and explore dataset to determine new location
-        curr_pos_slam = slamfunc(scan, curr_pos)
+        #curr_pos_slam = slamfunc(scan, curr_pos)
 
         # Feed SLAM estimate of position into Kalman Filter
-        curr_pos_filter = kalman(curr_pos, curr_meas=curr_pos_slam, curr_input)
+        # curr_pos_filter = kalman(curr_pos, curr_pos_slam, curr_input)
+        curr_pos_filter = kalman(curr_pos, curr_pos, curr_input)
+
 
         # print curr_pos # Last known filtered state of robot
         # print curr_meas # Current approximate state of robot
@@ -96,12 +101,13 @@ def main():
         # print curr_pos_filter # New filtered state of robot
 
         # Push new robot pose to database
-        insert_current_pos(curr_pos)
+        insert_current_pos(curr_pos_filter)
 
     print "Exited main loop ..."
 
     print "Clean up motor GPIO ..."
     GPIOclean()
+
 
 if __name__ == '__main__':
     main()

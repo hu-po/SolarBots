@@ -127,7 +127,7 @@ def main():
 
     moveBot('turnright', 90, MOTOR_DEFAULT_PWR)
 
-    clean()
+    GPIOclean()
 
 if __name__ == '__main__':
     main()

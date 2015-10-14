@@ -1,10 +1,12 @@
 # Author: Hugo P.
 # Project: https://github.com/HugoCMU/SolarTree
-# Description: Program takes in current position, and uses the map to determine best sequence of moves for robot to execute.
+# Description: Program takes in current position, and uses the map to
+# determine best sequence of moves for robot to execute.
 
-from brain import EXPLORE_ANGLE, EXPLORE_ITER, MOTOR_PWR, NUM_SONAR, NUM_LIGHT, DATA_SAMPLE_SIZE
-import motor import moveBot
+from brain import EXPLORE_ANGLE, EXPLORE_ITER, MOTOR_PWR, NUM_SONAR, NUM_LIGHT, DATA_SAMPLE_SIZE, ser
+from motor import moveBot
 import numpy as np
+import datetime
 from python_mysql_connect import insert_sensor_data, insert_current_pos, query_current_pos
 
 
@@ -15,9 +17,10 @@ def navigate(curr_pos):
     # Perform exploration movement
     moveBot('forward', 1, MOTOR_PWR)  # Move forward 1 unit (10 cm)
 
-    curr_input = np.array([10,0,EXPLORE_ANGLE]).reshape(-1,1)
+    curr_input = np.array([10, 0, EXPLORE_ANGLE]).reshape(-1, 1)
 
-	return curr_input
+    return curr_input
+
 
 def sample():
 
@@ -28,8 +31,6 @@ def sample():
         # print points
         # print len(points)
         # print "garbage"
-
-    print points
     return points
 
 
@@ -67,6 +68,7 @@ def smoothData(data):
 
     return data_smooth
 
+
 def explore():
     print "Exploring current location ..."
 
@@ -83,38 +85,39 @@ def explore():
         # Smooth raw data from sensors
         smooth_data = smoothData(raw_data)
 
-        print raw_data
-        print smooth_data
-        print smooth_data.tolist()
+        #print raw_data
+        #print smooth_data
 
         smooth_data = smooth_data.tolist()
 
         # Write data to MySQL
         for j in range(0, NUM_SONAR):
-        # HC-SR04 Sensor
-            #print 'HC-SR04'
-            #print j
-            #print smooth_data[j]
-            #print datetime.datetime.now()
-            insert_sensor_data(('HC-SR04', j, smooth_data[j], datetime.datetime.now()))
+            # HC-SR04 Sensor
+            # print 'HC-SR04'
+            # print j
+            # print smooth_data[j]
+            # print datetime.datetime.now()
+            insert_sensor_data(('HC-SR04', j + 1, smooth_data[j][0], datetime.datetime.now()))
 
         for j in range(0, NUM_LIGHT):
-        # TSL2561 Sensor
-            #print 'TSL2561'
-            #print NUM_SONAR + j
-            #print smooth_data[NUM_SONAR + j]
-            #print datetime.datetime.now()
-            insert_sensor_data(('TSL2561', j, smooth_data[NUM_SONAR + j], datetime.datetime.now()))
+            # TSL2561 Sensor
+            # print 'TSL2561'
+            # print NUM_SONAR + j
+            # print smooth_data[NUM_SONAR + j]
+            # print datetime.datetime.now()
+            insert_sensor_data(('TSL2561', j + 1, smooth_data[NUM_SONAR + j][0], datetime.datetime.now()))
 
         print explore_results[:, i]
 
         # Store smooth data in exploration results matrix
-        explore_results[:, i] = smooth_data.flatten()
+        explore_results[:, i] = np.array(smooth_data).flatten()
 
         # Rotate robot to get another set of data
-        moveBot('turnleft', (EXPLORE_ANGLE / EXPLORE_ITER), MOTOR_PWR)  # Ultimately make a 360 degree turn during exploration
+        # Ultimately make a 360 degree turn during exploration
+        moveBot('turnleft', (EXPLORE_ANGLE / EXPLORE_ITER), MOTOR_PWR)
 
     return explore_results
+
 
 def main():
     explore()

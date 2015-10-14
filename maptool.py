@@ -13,7 +13,7 @@ def update_map():  # Downloads map from database and writes it to local file
     connect()
 
     # Get map from database
-    mapa = querry_map()
+    mapa = query_map()
 
     # Store map as local xml file
     np.savetxt('map.txt', mapa)
