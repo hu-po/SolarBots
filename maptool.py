@@ -10,69 +10,6 @@ import datetime
 from python_mysql_connect import connect, query_map
 from brain import FOG_RADIUS, SENSOR_POS
 
-
-def pull_map():  # Downloads map from database and writes it to local file
-
-    # Get map from database
-    # TODO: Get map from database computer
-
-    # Store map as local .pcd file
-    # pcl.save(mapa, "map.pcd")
-
-    # For now this function will just initialize a blank map
-    initialize_map()
-
-def push_map(mapa):  # Pushes map pointcloud to database and writes to local file
-
-    # Get map from database
-    # TODO: Get map from database computer
-
-    # Store map as local .pcd file
-    pcl.save(mapa, "map.pcd")
-    
-
-def get_map(): # Loads map from local file and returns pointcloud object
-
-    # Load local .pcd file containing map
-    mapa = pcl.load("map.pcd")
-
-    # TODO: return only points within radius of current location.
-    # for i in range(0, ln(mapa))
-
-    # numpy.delete(mapa, (0), axis=0) # Delete 0th element along the 0th axis (rows)
-
-    return mapa
-
-
-def add_to_map(mapa, points):  # Add a set of points to the map
-
-    # Add points to map
-
-    # Filter the map
-    filter_map()
-
-    # Push map to database
-    push_map()
-
-    return mapa
-
-def filter_map(mapa, mean=50, std_dev=1.0): # Apply a statistical filter to the map
-
-    fil = mapa.make_statistical_outlier_filter()
-    fil.set_mean_k(mean)
-    fil.set_std_dev_mul_thresh(std_dev)
-    
-    return fil.filter()
-
-def initialize_map(): # Initializes an empty map
-
-    p = pcl.PointCloud()  # "empty" point cloud
-
-    # Save to local file
-    p.save("map.pcd")
-
-    return
-
 def scan_to_points(scan, curr_pos): # Converts an explore scan into pointcloud object
 
     # Get xyz data from SENSOR_POS
