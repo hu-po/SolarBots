@@ -10,7 +10,7 @@ GPIO.cleanup()
 GPIO.setmode(GPIO.BOARD)
 
 # Setup motor pin output
-GPIO.setup(Motor1A, GPIO.OUT)
+GPIO.setup(Motor1A, GPIO.OUT)  # Left Motor
 GPIO.setup(Motor1B, GPIO.OUT)
 GPIO.setup(Motor1E, GPIO.OUT)
 GPIO.setup(Motor2A, GPIO.OUT)
@@ -18,12 +18,16 @@ GPIO.setup(Motor2B, GPIO.OUT)
 GPIO.setup(Motor2E, GPIO.OUT)
 
 # Output low signal
-GPIO.output(Motor1A, GPIO.LOW)
+GPIO.output(Motor1A, GPIO.LOW)  # Right Motor
 GPIO.output(Motor1B, GPIO.LOW)
 GPIO.output(Motor1E, GPIO.LOW)
 GPIO.output(Motor2A, GPIO.LOW)
 GPIO.output(Motor2B, GPIO.LOW)
 GPIO.output(Motor2E, GPIO.LOW)
+
+# Initialize PWM for  both motors
+E1 = GPIO.PWM(Motor1E, 100)
+E2 = GPIO.PWM(Motor2E, 100)
 
 
 # Change speed of motor by controlling duty cycle
@@ -33,11 +37,7 @@ GPIO.output(Motor2E, GPIO.LOW)
 #     return
 
 
-def moveBot(direction, distance, num):
-
-    # Initialize PWM for  both motors
-    E1 = GPIO.PWM(Motor1E, 100)
-    E2 = GPIO.PWM(Motor2E, 100)
+def moveBot(direction, distance=10, num=MOTOR_DEFAULT_PWR, continuous_mode=False):
 
     # Start both sowftware PWMs
     E1.start(num)
@@ -46,6 +46,8 @@ def moveBot(direction, distance, num):
     # Alternatively send a HIGH signal for 100%
     # GPIO.output(Motor1E, GPIO.HIGH)
     # GPIO.output(Motor2E, GPIO.HIGH)
+
+    print continuous_mode
 
     if direction == 'forward':
         print "Going forwards ..."
@@ -56,7 +58,8 @@ def moveBot(direction, distance, num):
         GPIO.output(Motor2A, GPIO.HIGH)
         GPIO.output(Motor2B, GPIO.LOW)
 
-        sleep(distance * SEC_PER_MOVE)
+        if not continuous_mode:
+            sleep(distance * SEC_PER_MOVE)
 
     elif direction == 'backward':
         print "Going backwards ..."
@@ -67,7 +70,8 @@ def moveBot(direction, distance, num):
         GPIO.output(Motor2A, GPIO.LOW)
         GPIO.output(Motor2B, GPIO.HIGH)
 
-        sleep(distance * SEC_PER_MOVE)
+        if not continuous_mode:
+            sleep(distance * SEC_PER_MOVE)
 
     elif direction == 'turnleft':
         print "Turning Left ..."
@@ -78,7 +82,8 @@ def moveBot(direction, distance, num):
         GPIO.output(Motor2A, GPIO.LOW)
         GPIO.output(Motor2B, GPIO.HIGH)
 
-        sleep((distance / 360.0) * SEC_PER_TURN)
+        if not continuous_mode:
+            sleep((distance / 360.0) * SEC_PER_TURN)
 
     elif direction == 'turnright':
         print "Turning Right ..."
@@ -89,11 +94,23 @@ def moveBot(direction, distance, num):
         GPIO.output(Motor2A, GPIO.HIGH)
         GPIO.output(Motor2B, GPIO.LOW)
 
-        sleep((distance / 360.0) * SEC_PER_TURN)
+        if not continuous_mode:
+            sleep((distance / 360.0) * SEC_PER_TURN)
 
     else:
         print "ERROR: Wrong direction input"
 
+    if not continuous_mode:
+        motorStop()
+
+    return
+
+
+def GPIOclean():  # Cleanup GPIO output
+    GPIO.cleanup()
+
+
+def motorStop():    # Stop motors
     print "Stopping ..."
 
     E1.stop()
@@ -103,10 +120,6 @@ def moveBot(direction, distance, num):
     GPIO.output(Motor2E, GPIO.LOW)
 
     return
-
-
-def GPIOclean():  # Cleanup GPIO output
-    GPIO.cleanup()
 
 
 def main():
