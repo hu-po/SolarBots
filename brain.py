@@ -9,16 +9,20 @@ import numpy as np
 ser = serial.Serial('/dev/ttyACM0',  9600)
 
 # Define Navigation Parameters
-DATA_SAMPLE_SIZE = 3   # Sample size for data (increase to stabilize at cost of speed)
-NUM_SONAR = 3  # Number of sonar sensors #TODO: figure this out based on SENSOR_POS
-NUM_LIGHT = 3   # Number of light sensors #TODO: figure this out based on SENSOR_POS
+# Sample size for data (increase to stabilize at cost of speed)
+DATA_SAMPLE_SIZE = 3
+# Number of sonar sensors #TODO: figure this out based on SENSOR_POS
+NUM_SONAR = 3
+# Number of light sensors #TODO: figure this out based on SENSOR_POS
+NUM_LIGHT = 3
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
 MOTOR_PWR = 30  # 0 - 100 speed of motor
 EXPLORE_ITER = 4  # Number of sensor readings in an explore scan
 EXPLORE_ANGLE = 360.0  # Angle to explore during an explore scan
 
 # Define SLAM Parameters (distance/angle perturbations)
-FOG_RADIUS = 100  # Radius of section of map to use (centered around current position) for SLAM
+# Radius of section of map to use (centered around current position) for SLAM
+FOG_RADIUS = 100
 RAND_DIST_MU = 0  # Center of distribution (cm)
 RAND_DIST_SIGMA = 1  # Standard deviation (cm)
 RAND_ANG_MU = 0  # Degrees
@@ -44,12 +48,12 @@ SENSOR_POS = [['HC-SR04', 1,    0,    6,  0, 1,  0,  0],
               ['TSL2561', 3,    0, -9.5,  0, 0,  0, -1]]
 
 # Define motor pins
-Motor1A = 16
+Motor1A = 16  # Right Motor
 Motor1B = 18
 Motor1E = 22
-Motor2A = 15
+Motor2A = 11  # Left Motor
 Motor2B = 13
-Motor2E = 11
+Motor2E = 15
 
 
 def main():
@@ -88,7 +92,6 @@ def main():
         # Feed SLAM estimate of position into Kalman Filter
         # curr_pos_filter = kalman(curr_pos, curr_pos_slam, curr_input)
         curr_pos_filter = kalman(curr_pos, curr_pos, curr_input)
-
 
         # print curr_pos # Last known filtered state of robot
         # print curr_meas # Current approximate state of robot
