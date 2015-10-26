@@ -77,27 +77,27 @@ def insert_current_pos(data):
         conn.close()
 
 
-# def query_map():
-#     try:
-#         dbconfig = read_db_config()
-#         conn = MySQLConnection(**dbconfig)
-#         cursor = conn.cursor()
-#         cursor.execute("SELECT Weight, X_pos, Y_pos FROM Map")
+def query_sensor_data(): # Returns the last set of sensor data
+    try:
+        dbconfig = read_db_config()
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM SensorData WHERE (SensorType, SensorNum, Date) IN (SELECT SensorType, SensorNum, MAX(Date) FROM SensorData GROUP BY SensorType, SensorNum)")
 
-#         row = cursor.fetchall()
+        row = cursor.fetchall()
 
-#         while row is not None:
-#             print(row)
-#             row = cursor.fetchall()
+        while row is not None:
+            print(row)
+            row = cursor.fetchall()
 
-#     except Error as e:
-#         print(e)
+    except Error as e:
+        print(e)
 
-#     finally:
-#         cursor.close()
-#         conn.close()
+    finally:
+        cursor.close()
+        conn.close()
 
-#     return row
+    return row
 
 
 def query_current_pos():
@@ -105,7 +105,7 @@ def query_current_pos():
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
-        cursor.execute("SELECT X_pos, Y_pos, Theta FROM Localization WHERE Source LIKE  'corrected'")
+        cursor.execute("SELECT X_pos, Y_pos, Theta FROM Localization WHERE Source LIKE 'corrected' LIMIT 1")
 
         row = cursor.fetchone()
 
@@ -135,3 +135,24 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+'''
+
+---------- TEST DATA ---------
+
+CREATE TABLE SensorData(SensorType varchar(255), SensorNum int, Reading int, Date DATETIME(6));
+INSERT INTO SensorData(SensorType, SensorNum, Reading, Date) VALUES 
+('Sonar', 1, 10, '2015-10-26 11:38:34'), ('Sonar', 2, 10, '2015-10-26 11:38:34'), ('Sonar', 3, 10, '2015-10-26 11:38:34'),
+('Light', 1, 10, '2015-10-26 11:38:34'), ('Light', 2, 10, '2015-10-26 11:38:34'), ('Light', 3, 10, '2015-10-26 11:38:34'),
+('Sonar', 1, 10, '2015-10-26 11:40:18'), ('Sonar', 2, 10, '2015-10-26 11:40:18'), ('Sonar', 3, 10, '2015-10-26 11:40:18'),
+('Light', 1, 10, '2015-10-26 11:40:18'), ('Light', 2, 10, '2015-10-26 11:40:18'), ('Light', 3, 10, '2015-10-26 11:40:18');
+
+
+SELECT * FROM SensorData
+ WHERE (SensorType, SensorNum, Date) IN
+ (
+   SELECT SensorType, SensorNum, MAX(Date)
+     FROM SensorData
+    GROUP BY SensorType, SensorNum
+ )
+'''

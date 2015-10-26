@@ -27,15 +27,15 @@ while key != ord('q'):
         moveBot('forward', continuous_mode=True)
 
     elif key == curses.KEY_DOWN:
-        stdscr.addstr(3, 20, "Down")
+        stdscr.addstr(2, 20, "Down")
         moveBot('backward', continuous_mode=True)
 
     elif key == curses.KEY_LEFT:
-        stdscr.addstr(3, 20, "Left")
+        stdscr.addstr(2, 20, "Left")
         moveBot('turnleft', continuous_mode=True)
 
     elif key == curses.KEY_RIGHT:
-        stdscr.addstr(3, 20, "Right")
+        stdscr.addstr(2, 20, "Right")
         moveBot('turnright', continuous_mode=True)
 
 curses.endwin()
