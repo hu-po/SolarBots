@@ -6,6 +6,7 @@ from time import sleep
 import numpy as np
 import picamera
 import cv2
+from servo import setServo, getServo
 
 # Initialize camera
 camera = picamera.PiCamera() # TODO determine if this is the same datatype as an .imread('bleh.jpg')
@@ -25,7 +26,7 @@ camera.stop_preview()
 fast = cv2.FastFeatureDetector()
 
 # find and draw the keypoints
-kp = fast.detect(img,None)
+kp = fast.detect(img, None)
 img2 = cv2.drawKeypoints(img, kp, color=(255,0,0))
 
 # Print all default params
@@ -45,7 +46,6 @@ print "Total Keypoints without nonmaxSuppression: ", len(kp)
 img3 = cv2.drawKeypoints(img, kp, color=(255,0,0))
 
 cv2.imwrite('fast_false.png',img3)
-
 
 # --------- Code for ORB from online:
 

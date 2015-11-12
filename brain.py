@@ -4,6 +4,8 @@
 
 import serial
 import numpy as np
+import Sensor
+import math
 
 # Serial communication with Arduino
 ser = serial.Serial('/dev/ttyACM0',  9600)
@@ -12,7 +14,7 @@ ser = serial.Serial('/dev/ttyACM0',  9600)
 # Sample size for data (increase to stabilize at cost of speed)
 DATA_SAMPLE_SIZE = 3
 # Number of sonar sensors #TODO: figure this out based on SENSOR_POS
-NUM_SONAR = 3
+NUM_SONAR = 6
 # Number of light sensors #TODO: figure this out based on SENSOR_POS
 NUM_LIGHT = 3
 MAX_ITER = 10   # Maximum number of Sense-Plan-Act Cycles
@@ -39,13 +41,30 @@ MOTOR_DEFAULT_PWR = 30  # Default starting power for the motor
 MOTOR_OFFSET_PWR = -1  # Difference between Motor 1 and Motor 2
 
 # Define Position of sensors relative to robot frame (in cm)
-# [Sensor Name, Sensor Number, X location, Y location, Z location, Mask X, Mask Y, Mask Z]
-SENSOR_POS = [['HC-SR04', 1,    0,    6,  0, 1,  0,  0],
-              ['HC-SR04', 2,  9.5,    0,  0, 0, -1,  0],
-              ['HC-SR04', 3, -9.5,    0,  0, 0,  1,  0],
-              ['TSL2561', 1, -8.2, 4.75,  0, 0,  0, -1],
-              ['TSL2561', 2,  8.2, 4.75,  0, 0,  0, -1],
-              ['TSL2561', 3,    0, -9.5,  0, 0,  0, -1]]
+# # [Sensor Name, Sensor Number, X location, Y location, Z location, Mask X, Mask Y, Mask Z]
+# SENSOR_POS = [['HC-SR04', 1,    0,    8.5,  0, 0,  0,  0],
+#               ['HC-SR04', 2, 7.36,   4.25,  0, 0, -1,  0],
+#               ['HC-SR04', 3, 7.36,  -4.25,  0, 0,  1,  0],
+#               ['HC-SR04', 4,    0,   -8.5,  0, 0, -1,  0],
+#               ['HC-SR04', 5,-7.36,  -4.25,  0, 0,  1,  0],
+#               ['HC-SR04', 6,-7.36,   4.25,  0, 0, -1,  0],
+#               ['TSL2561', 1, 7.36,   4.25,  0, 0,  0, -1],
+#               ['TSL2561', 2,    0,   -8.5,  0, 0,  0, -1],
+#               ['TSL2561', 3,-7.36,   4.25,  0, 0,  0, -1]]
+
+# Create sensor object
+sensors = Sensor()
+
+# Add sensors to sensor dictionary
+sensors.addSensor('HC-SR04', 1, [    0,    8.5,  0,     math.pi/2])
+sensors.addSensor('HC-SR04', 2, [ 7.36,   4.25,  0,     math.pi/6])
+sensors.addSensor('HC-SR04', 3, [ 7.36,  -4.25,  0,    -math.pi/6])
+sensors.addSensor('HC-SR04', 4, [    0,   -8.5,  0,    -math.pi/2])
+sensors.addSensor('HC-SR04', 5, [-7.36,  -4.25,  0, -5*(math.pi/6)])
+sensors.addSensor('HC-SR04', 6, [-7.36,   4.25,  0,  5*(math.pi/6)])
+sensors.addSensor('TSL2561', 1, [    0,    8.5,  0, 0,     math.pi/6])
+sensors.addSensor('TSL2561', 2, [    0,    8.5,  0, 0,    -math.pi/2])
+sensors.addSensor('TSL2561', 3, [    0,    8.5,  0, 0,  5*(math.pi/6)])
 
 # Define motor pins
 Motor1A = 16  # Right Motor
@@ -54,6 +73,10 @@ Motor1E = 22
 Motor2A = 11  # Left Motor
 Motor2B = 13
 Motor2E = 15
+
+# Define servo pins
+Servo1 = 00 # Horizontal (Side to Side) servo
+Servo2 = 00 # Vertical (Up and Down) servo
 
 
 def main():

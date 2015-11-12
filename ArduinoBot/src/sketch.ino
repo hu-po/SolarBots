@@ -1,9 +1,9 @@
 #include <NewPing.h>
 #include <TSL2561.h>
 
-#define SONAR_NUM     4 // Number or sensors.
+#define SONAR_NUM     6 // Number or sensors.
 #define MAX_DISTANCE  100 // Maximum distance (in cm) to ping.
-#define PING_INTERVAL  40 //33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
+#define PING_INTERVAL  35 //33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
 unsigned long pingTimer[SONAR_NUM]; // Holds the times when the next ping should happen for each sensor.
 unsigned int cm[SONAR_NUM];         // Where the ping distances are stored.
@@ -14,10 +14,12 @@ TSL2561 tsl_2(TSL2561_ADDR_LOW);
 TSL2561 tsl_3(TSL2561_ADDR_FLOAT);
 
 NewPing sonar[SONAR_NUM] = {     // Sensor object array.
-  NewPing(14, 15, MAX_DISTANCE),
-  NewPing(8, 9, MAX_DISTANCE),
-  NewPing(10, 11, MAX_DISTANCE),
-  NewPing(12, 13, MAX_DISTANCE) // Each sensor's trigger pin, echo pin, and max distance to ping.
+  NewPing(00, 00, MAX_DISTANCE),
+  NewPing(00, 00, MAX_DISTANCE),
+  NewPing(00, 00, MAX_DISTANCE),
+  NewPing(00, 00, MAX_DISTANCE),
+  NewPing(00, 00, MAX_DISTANCE),
+  NewPing(00, 00, MAX_DISTANCE) // Each sensor's trigger pin, echo pin, and max distance to ping.
 };
 
 void setup() {
