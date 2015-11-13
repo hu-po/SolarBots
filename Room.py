@@ -1,9 +1,6 @@
 # Project: https://github.com/HugoCMU/SolarTree
 # Description: Room class defines room objects, which contain navigation information 
 
-import numpy as np
-from numpy import cos, sin
-
 class Room:
 
 	def __init__(self):

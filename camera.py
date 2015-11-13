@@ -7,18 +7,24 @@ import numpy as np
 import picamera
 import cv2
 from servo import setServo, getServo
+from brain import params
 
 # Initialize camera
 camera = picamera.PiCamera() # TODO determine if this is the same datatype as an .imread('bleh.jpg')
 
 # Take a test picture and show it
-camera.capture('testimage.jpg')
+camera.capture('Camera/testimage.jpg')
 camera.start_preview()
 sleep(10)
 camera.stop_preview()
 
 # TODO: take picture and find features with OpenCV
 	# Possibly use ORB feature detection for speed? Maybe FAST?
+
+def moveCam(direction, step=params.p('CAMERA_SERVO_STEP')):
+
+	# TODO: move camera based on direction
+
 
 # --------- Code for FAST from online:
 

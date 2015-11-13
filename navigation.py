@@ -3,7 +3,7 @@
 # Description: Program takes in current position, and uses the map to
 # determine best sequence of moves for robot to execute.
 
-from brain import EXPLORE_ANGLE, EXPLORE_ITER, MOTOR_PWR, NUM_SONAR, NUM_LIGHT, DATA_SAMPLE_SIZE, ser
+from brain import ser, params, sensors
 from motor import moveBot
 import numpy as np
 import datetime
@@ -16,9 +16,9 @@ def navigate(curr_pos):
     # Somehow break these down into motion primitives?
 
     # Perform exploration movement
-    moveBot('forward', 1, MOTOR_PWR)  # Move forward 1 unit (10 cm)
+    moveBot('forward', 1, params.p('MOTOR_PWR'))  # Move forward 1 unit (10 cm)
 
-    curr_input = np.array([10, 0, EXPLORE_ANGLE]).reshape(-1, 1)
+    curr_input = np.array([10, 0, params.p('EXPLORE_ANGLE')]).reshape(-1, 1)
 
     return curr_input
 
@@ -39,10 +39,10 @@ def readData():
     print "Reading data ..."
 
     # Create empty data array to store data
-    data = np.empty([DATA_SAMPLE_SIZE, (NUM_SONAR + NUM_LIGHT)])
+    data = np.empty([params.p('DATA_SAMPLE_SIZE'), (sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561'))])
 
     # Populate empty data array
-    for i in range(0, DATA_SAMPLE_SIZE):
+    for i in range(0, params.p('DATA_SAMPLE_SIZE')):
 
         # print data(i,:)
         data[i, :] = sample()
@@ -55,10 +55,10 @@ def smoothData(data):
     print "Smoothing data ..."
 
     # Create empty data array to store smooth data
-    data_smooth = np.empty([NUM_SONAR + NUM_LIGHT, 1])
+    data_smooth = np.empty([sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561'), 1])
 
     # Simple median smoothing
-    for i in range(0, NUM_SONAR + NUM_LIGHT):
+    for i in range(0, sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561')):
         # print i
         # print data_smooth[i]
         # print data[:, i]
@@ -74,11 +74,11 @@ def explore():
     print "Exploring current location ..."
 
     # Initialize exploration results matrix
-    explore_results = np.empty([NUM_SONAR + NUM_LIGHT, EXPLORE_ITER])
+    explore_results = np.empty([sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561'), params.p('EXPLORE_ITER')])
 
     print explore_results
 
-    for i in range(0, EXPLORE_ITER):
+    for i in range(0, params.p('EXPLORE_ITER')):
 
         # Read in raw data from sensors
         raw_data = readData()
@@ -92,7 +92,7 @@ def explore():
         smooth_data = smooth_data.tolist()
 
         # Write data to MySQL
-        for j in range(0, NUM_SONAR):
+        for j in range(0, sensors.numSensor('HC-SR04')):
             # HC-SR04 Sensor
             # print 'HC-SR04'
             # print j
@@ -100,13 +100,13 @@ def explore():
             # print datetime.datetime.now()
             insert_sensor_data(('HC-SR04', j + 1, smooth_data[j][0], datetime.datetime.now()))
 
-        for j in range(0, NUM_LIGHT):
+        for j in range(0, sensors.numSensor('TSL2561')):
             # TSL2561 Sensor
             # print 'TSL2561'
             # print NUM_SONAR + j
             # print smooth_data[NUM_SONAR + j]
             # print datetime.datetime.now()
-            insert_sensor_data(('TSL2561', j + 1, smooth_data[NUM_SONAR + j][0], datetime.datetime.now()))
+            insert_sensor_data(('TSL2561', j + 1, smooth_data[sensors.numSensor('HC-SR04') + j][0], datetime.datetime.now()))
 
         print explore_results[:, i]
 
@@ -115,7 +115,7 @@ def explore():
 
         # Rotate robot to get another set of data
         # Ultimately make a 360 degree turn during exploration
-        moveBot('turnleft', (EXPLORE_ANGLE / EXPLORE_ITER), MOTOR_PWR)
+        moveBot('turnleft', (params.p('EXPLORE_ANGLE') / params.p('EXPLORE_ITER')), params.p('MOTOR_PWR'))
 
     return explore_results
 
