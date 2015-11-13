@@ -1,5 +1,6 @@
 import curses
 from motor import moveBot, motorStop
+from camera import moveCam
 
 stdscr = curses.initscr()
 curses.cbreak()
@@ -37,5 +38,21 @@ while key != ord('q'):
     elif key == curses.KEY_RIGHT:
         stdscr.addstr(2, 20, "Right")
         moveBot('turnright', continuous_mode=True)
+
+    elif key == ord('w'):
+        stdscr.addstr(2, 20, "Camera_Up")
+        moveCam('up')
+
+    elif key == ord('s'):
+        stdscr.addstr(2, 20, "Camera_Down")
+        moveCam('down')
+
+    elif key == ord('a'):
+        stdscr.addstr(2, 20, "Camera_Left")
+        moveCam('right')
+
+    elif key == ord('d'):
+        stdscr.addstr(2, 20, "Camera_Right")
+        moveCam('left')
 
 curses.endwin()
