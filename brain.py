@@ -25,9 +25,8 @@ params.addParam(
 params.addParam(
     'EXPLORE_ANGLE', 360.0, 'Angle to explore during an explore scan')
 
+
 # Add SLAM Parameters (name, value, description)
-params.addParam('FOG_RADIUS', 100,
-                'Radius of section of map to use (centered around current position) for SLAM')
 params.addParam('RAND_DIST_MU', 0, 'Center of distribution (cm)')
 params.addParam('RAND_DIST_SIGMA', 1, 'Standard deviation (cm)')
 params.addParam('RAND_ANG_MU', 0, 'Degrees')
@@ -36,6 +35,12 @@ params.addParam('RAND_NUM', 10, 'Number of random samples')
 
 # Add Kalman Filter Parameters
 params.addParam('OBSERVATION_NOISE', 0.1, 'Kalman Filter observation noise')
+
+# Add Tuning Parameters
+params.addParam('DISTANCE_WEIGHT', [1, 1, 0.2],
+                'Weighting of [X, Y, Theta] each when determining ditance number')
+params.addParam('FOG_RADIUS', 100,
+                'Distance metric to use (centered around current position) for looking for close nodes')
 
 # Add Motor Parameters
 params.addParam(
@@ -55,15 +60,15 @@ params.addParam(
 sensors = Sensor()
 
 # Add sensors to sensor dictionary
-sensors.addSensor('HC-SR04', 1, [0,    8.5,  0,     math.pi / 2])
-sensors.addSensor('HC-SR04', 2, [7.36,   4.25,  0,     math.pi / 6])
-sensors.addSensor('HC-SR04', 3, [7.36,  -4.25,  0,    -math.pi / 6])
-sensors.addSensor('HC-SR04', 4, [0,   -8.5,  0,    -math.pi / 2])
-sensors.addSensor('HC-SR04', 5, [-7.36,  -4.25,  0, -5 * (math.pi / 6)])
-sensors.addSensor('HC-SR04', 6, [-7.36,   4.25,  0,  5 * (math.pi / 6)])
-sensors.addSensor('TSL2561', 1, [0,    8.5,  0, 0,     math.pi / 6])
-sensors.addSensor('TSL2561', 2, [0,    8.5,  0, 0,    -math.pi / 2])
-sensors.addSensor('TSL2561', 3, [0,    8.5,  0, 0,  5 * (math.pi / 6)])
+sensors.addSensor('HC-SR04', 1, 10, [0,    8.5,  0,     math.pi / 2])
+sensors.addSensor('HC-SR04', 2, 10, [7.36,   4.25,  0,     math.pi / 6])
+sensors.addSensor('HC-SR04', 3, 10, [7.36,  -4.25,  0,    -math.pi / 6])
+sensors.addSensor('HC-SR04', 4, 10, [0,   -8.5,  0,    -math.pi / 2])
+sensors.addSensor('HC-SR04', 5, 10, [-7.36,  -4.25,  0, -5 * (math.pi / 6)])
+sensors.addSensor('HC-SR04', 6, 10, [-7.36,   4.25,  0,  5 * (math.pi / 6)])
+sensors.addSensor('TSL2561', 1, 5, [0,    8.5,  0, 0,     math.pi / 6])
+sensors.addSensor('TSL2561', 2, 5, [0,    8.5,  0, 0,    -math.pi / 2])
+sensors.addSensor('TSL2561', 3, 5, [0,    8.5,  0, 0,  5 * (math.pi / 6)])
 
 # Create PinMaster object
 pins = PinMaster()
