@@ -16,14 +16,18 @@ ser = serial.Serial('/dev/ttyACM0',  9600)
 params = Parameters()
 
 # Add Navigation Parameters (name, value, description)
-params.addParam('DATA_SAMPLE_SIZE', 3, 'Sample size for data (increase to stabilize at cost of speed)')
+params.addParam('DATA_SAMPLE_SIZE', 3,
+                'Sample size for data (increase to stabilize at cost of speed)')
 params.addParam('MAX_ITER', 10, 'Maximum number of Sense-Plan-Act Cycles')
 params.addParam('MOTOR_PWR', 30, '0 - 100 speed of motor')
-params.addParam('EXPLORE_ITER', 4, 'Number of sensor readings in an explore scan')
-params.addParam('EXPLORE_ANGLE', 360.0, 'Angle to explore during an explore scan')
+params.addParam(
+    'EXPLORE_ITER', 4, 'Number of sensor readings in an explore scan')
+params.addParam(
+    'EXPLORE_ANGLE', 360.0, 'Angle to explore during an explore scan')
 
 # Add SLAM Parameters (name, value, description)
-params.addParam('FOG_RADIUS', 100, 'Radius of section of map to use (centered around current position) for SLAM')
+params.addParam('FOG_RADIUS', 100,
+                'Radius of section of map to use (centered around current position) for SLAM')
 params.addParam('RAND_DIST_MU', 0, 'Center of distribution (cm)')
 params.addParam('RAND_DIST_SIGMA', 1, 'Standard deviation (cm)')
 params.addParam('RAND_ANG_MU', 0, 'Degrees')
@@ -34,45 +38,50 @@ params.addParam('RAND_NUM', 10, 'Number of random samples')
 params.addParam('OBSERVATION_NOISE', 0.1, 'Kalman Filter observation noise')
 
 # Add Motor Parameters
-params.addParam('SEC_PER_TURN', 10, 'Seconds required to complete one full turn')
+params.addParam(
+    'SEC_PER_TURN', 10, 'Seconds required to complete one full turn')
 params.addParam('SEC_PER_MOVE', 1, 'Seconds required to move 10cm')
-params.addParam('MOTOR_DEFAULT_PWR', 30, 'Default starting power for the motor')
-params.addParam('MOTOR_OFFSET_PWR', -1, 'Difference between Motor 1 and Motor 2')
+params.addParam(
+    'MOTOR_DEFAULT_PWR', 30, 'Default starting power for the motor')
+params.addParam(
+    'MOTOR_OFFSET_PWR', -1, 'Difference between Motor 1 and Motor 2')
 params.addParam('MOTOR_PWM_FREQ', 100, 'Frequency of PWM for motors')
 
 # Add Camera Parameters
-params.addParam('CAMERA_SERVO_STEP', 5, 'Step to increment camera servo in degrees')
+params.addParam(
+    'CAMERA_SERVO_STEP', 5, 'Step to increment camera servo in degrees')
 
 # Create Sensor object
 sensors = Sensor()
 
 # Add sensors to sensor dictionary
-sensors.addSensor('HC-SR04', 1, [    0,    8.5,  0,     math.pi/2])
-sensors.addSensor('HC-SR04', 2, [ 7.36,   4.25,  0,     math.pi/6])
-sensors.addSensor('HC-SR04', 3, [ 7.36,  -4.25,  0,    -math.pi/6])
-sensors.addSensor('HC-SR04', 4, [    0,   -8.5,  0,    -math.pi/2])
-sensors.addSensor('HC-SR04', 5, [-7.36,  -4.25,  0, -5*(math.pi/6)])
-sensors.addSensor('HC-SR04', 6, [-7.36,   4.25,  0,  5*(math.pi/6)])
-sensors.addSensor('TSL2561', 1, [    0,    8.5,  0, 0,     math.pi/6])
-sensors.addSensor('TSL2561', 2, [    0,    8.5,  0, 0,    -math.pi/2])
-sensors.addSensor('TSL2561', 3, [    0,    8.5,  0, 0,  5*(math.pi/6)])
+sensors.addSensor('HC-SR04', 1, [0,    8.5,  0,     math.pi / 2])
+sensors.addSensor('HC-SR04', 2, [7.36,   4.25,  0,     math.pi / 6])
+sensors.addSensor('HC-SR04', 3, [7.36,  -4.25,  0,    -math.pi / 6])
+sensors.addSensor('HC-SR04', 4, [0,   -8.5,  0,    -math.pi / 2])
+sensors.addSensor('HC-SR04', 5, [-7.36,  -4.25,  0, -5 * (math.pi / 6)])
+sensors.addSensor('HC-SR04', 6, [-7.36,   4.25,  0,  5 * (math.pi / 6)])
+sensors.addSensor('TSL2561', 1, [0,    8.5,  0, 0,     math.pi / 6])
+sensors.addSensor('TSL2561', 2, [0,    8.5,  0, 0,    -math.pi / 2])
+sensors.addSensor('TSL2561', 3, [0,    8.5,  0, 0,  5 * (math.pi / 6)])
 
 # Create PinMaster object
 pins = PinMaster()
 
 # Add pins to pin dictionary
 pins.addPin('Motor1A', 16)
-pins.addPin('Motor1B', 18) # Right Motor
-pins.addPin('Motor1E', 22)
-pins.addPin('Motor2A', 11) # Left Motor
-pins.addPin('Motor2B', 13)
-pins.addPin('Motor2E', 15)
-pins.addPin('Servo1', 00) # Horizontal (Side to Side) servo
-pins.addPin('Servo2', 00) # Vertical (Up and Down) servo
-pins.addPin('Piezo', 00) # Piezo buzzer 
+pins.addPin('Motor1B', 20)  # Right Motor
+pins.addPin('Motor1E', 21)
+pins.addPin('Motor2A', 13)  # Left Motor
+pins.addPin('Motor2B', 19)
+pins.addPin('Motor2E', 26)
+pins.addPin('Servo1', 00)  # Horizontal (Side to Side) servo
+pins.addPin('Servo2', 00)  # Vertical (Up and Down) servo
+pins.addPin('Piezo', 25)  # Piezo buzzer
 
 # Create Map object
 mapa = Mapa()
+
 
 def main():
 
