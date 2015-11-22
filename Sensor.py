@@ -5,53 +5,75 @@
 import numpy as np
 from numpy import cos, sin
 
+# TODO: Make an inherited class from Sensor called Reading, which stores
+# information for a sensor reading
+
+
 class Sensor:
 
-	def __init__(self):
+    def __init__(self):
 
-		# Initialize sensor dictionary
-		self.s = {}
+        # Initialize sensor dictionary
+        self.s = {}
 
-	def addSensor(self, num, name, location):
+    def addSensor(self, name, num, weight, location):
 
-		# Name, number, location (in robot frame), and transformation (to robot frame) of sensor
-		self.s[(name, num)] = (name, num, location, calculateTransform(location))
-		
-	def calculateTransform(loc): # Calculate the transformation from sensor to the robot frame
-		
-	    # Transformation for 3D Rotation along Z-Axis by Theta
-	    rotation = [[cos(loc[3]), -sin(loc[3]),  0,  0],
-	                [sin(loc[3]),  cos(loc[3]),  0,  0],
-	                [          0,            0,  1,  0],
-	                [          0,            0,  0,  1]]
+        # Name, number, location (in robot frame), and transformation (to robot
+        # frame) of sensor
+        self.s[(name, num)] = (location, weight, calculateTransform(location))
 
-	    # Transformation for 3D Translation along X and Y Axis
-	    translation = [[1, 0, 0,  loc[0]],
-	                   [0, 1, 0,  loc[1]],
-	                   [0, 0, 1,  loc[2]],
-	                   [0, 0, 0,       1]]
+    # Calculate the transformation to a frame
+    def calculateTransform(loc):
 
-	    T = np.dot(translation, rotation)
+        # Transformation for 3D Rotation along Z-Axis by Theta
+        rotation = [[cos(loc[3]), -sin(loc[3]),  0,  0],
+                    [sin(loc[3]),  cos(loc[3]),  0,  0],
+                    [0,            0,  1,  0],
+                    [0,            0,  0,  1]]
 
-	    # Return transform
-		return T
+        # Transformation for 3D Translation along X and Y Axis
+        translation = [[1, 0, 0,  loc[0]],
+                       [0, 1, 0,  loc[1]],
+                       [0, 0, 1,  loc[2]],
+                       [0, 0, 0,       1]]
 
-	def transformReading(key, reading): # Transform sonar sensor reading to global frame
+        T = np.dot(translation, rotation)
 
-		# Get proper transform by using key (name, num) to get right sensor
-		T = self.s(key)
+        # Return transform
+        return T
 
-		# Multiply reading by transform
-		new_read = np.dot(T, np.array([reading, 0, 0]).reshape((3, 1)))
+    # Transform sonar sensor reading to robot frame
+    def to_robot(self, key, reading):
 
-		# Return new reading
-		return new_read
+        # Get proper transform by using key (name, num) to get right sensor
+        (_, _, T) = self.s(key)
 
-	def numSensor(self, name): # Returns the number of a type of sensor
+        # Multiply reading by transform
+        new_read = np.dot(T, np.array([reading, 0, 0]).reshape((3, 1)))
 
-		# Determine number of sensors with given name
-		num = [x[0] for x in self.s.keys() if x[0] == name]
+        # Return new reading
+        return new_read
 
-		return len(num)
-		
+    # Transform sonar sensor reading to global frame
+    def to_global(key, reading):
 
+        # TODO: Transform sensor reading to global frame
+
+        # Return new reading
+        return new_read
+
+    def numSensor(self, name):  # Returns the number of a type of sensor
+
+        # Determine number of sensors with given name
+        num = [x[0] for x in self.s.keys() if x[0] == name]
+
+        return len(num)
+
+    # Applies the weight transform to sensor readings
+    def to_robot(self, key, reading):
+
+        # Multiply reading by transform
+        new_read = np.multiply(self.s[key], np.array([reading, 0, 0]).reshape((3, 1))) # TODO: Check this math, reading array needs to be properly sized
+
+        # Return new reading
+        return new_read
