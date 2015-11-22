@@ -42,6 +42,9 @@ params.addParam('DISTANCE_WEIGHT', [1, 1, 0.2],
 params.addParam('FOG_RADIUS', 100,
                 'Distance metric to use (centered around current position) for looking for close nodes')
 
+# Add file path parameters
+params.addParam('ROOM_PATH', 'Data/Rooms/', 'Path to saved room objects')
+
 # Add Motor Parameters
 params.addParam(
     'SEC_PER_TURN', 10, 'Seconds required to complete one full turn')
@@ -74,15 +77,15 @@ sensors.addSensor('TSL2561', 3, 5, [0,    8.5,  0, 0,  5 * (math.pi / 6)])
 pins = PinMaster()
 
 # Add pins to pin dictionary
-pins.addPin('Motor1A', 16)
-pins.addPin('Motor1B', 20)  # Right Motor
-pins.addPin('Motor1E', 21)
-pins.addPin('Motor2A', 13)  # Left Motor
-pins.addPin('Motor2B', 19)
-pins.addPin('Motor2E', 26)
-pins.addPin('Servo1', 00)  # Horizontal (Side to Side) servo
-pins.addPin('Servo2', 00)  # Vertical (Up and Down) servo
-pins.addPin('Piezo', 25)  # Piezo buzzer
+pins.addPin('MOTOR1A', 16)
+pins.addPin('MOTOR1B', 20)  # Right Motor
+pins.addPin('MOTOR1E', 21)
+pins.addPin('MOTOR2A', 13)  # Left Motor
+pins.addPin('MOTOR2B', 19)
+pins.addPin('MOTOR2E', 26)
+pins.addPin('SERVO1', 00)  # Horizontal (Side to Side) servo
+pins.addPin('SERVO2', 00)  # Vertical (Up and Down) servo
+pins.addPin('BUZZER', 25)  # Piezo buzzer
 
 # Create Map object
 mapa = Mapa()
@@ -105,36 +108,14 @@ def main():
     print "Downloading map from database ..."
     pull_map()
 
-    print "Starting main loop ..."
+    print "Starting main exploration loop ..."
 
     for i in range(0, params.p('MAX_ITER')):
 
-        # Get current robot pose from database
-        curr_pos = query_current_pos()
+        # Explore (Move to a new area)
+        explore()
 
-        # Move robot to new position based on current position and sensor input
-        curr_input = navigate(curr_pos)
-
-        # Explore (get dataset of points)
-        scan = explore()
-
-        # Use current position and explore dataset to determine new location
-        #curr_pos_slam = slamfunc(scan, curr_pos)
-
-        # Feed SLAM estimate of position into Kalman Filter
-        # curr_pos_filter = kalman(curr_pos, curr_pos_slam, curr_input)
-
-        curr_pos_filter = kalman(curr_pos, curr_pos, curr_input)
-
-        # print curr_pos # Last known filtered state of robot
-        # print curr_meas # Current approximate state of robot
-        # print curr_input # Input vector which was inputed since last known state
-        # print curr_pos_filter # New filtered state of robot
-
-        # Push new robot pose to database
-        insert_current_pos(curr_pos_filter)
-
-    print "Exited main loop ..."
+    print "Exited main exploration loop ..."
 
     print "Pushing map to database ..."
     push_map()
@@ -145,3 +126,27 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# --------------------- OLD CODE
+
+        # Get current robot pose from database
+        # curr_pos = query_current_pos()
+
+        # Move robot to new position based on current position and sensor input
+        # curr_input = navigate(curr_pos)
+
+        # Use current position and explore dataset to determine new location
+        # curr_pos_slam = slamfunc(scan, curr_pos)
+
+        # Feed SLAM estimate of position into Kalman Filter
+        # curr_pos_filter = kalman(curr_pos, curr_pos_slam, curr_input)
+
+        # curr_pos_filter = kalman(curr_pos, curr_pos, curr_input)
+
+        # print curr_pos # Last known filtered state of robot
+        # print curr_meas # Current approximate state of robot
+        # print curr_input # Input vector which was inputed since last known state
+        # print curr_pos_filter # New filtered state of robot
+
+        # Push new robot pose to database
+        # insert_current_pos(curr_pos_filter)

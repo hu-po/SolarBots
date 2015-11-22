@@ -7,6 +7,7 @@ from brain import ser, params, sensors
 from actions import moveBot, beep
 import Move
 import Area
+import camera
 
 import numpy as np
 import datetime
@@ -14,18 +15,23 @@ import maptool
 from python_mysql_connect import insert_sensor_data, insert_current_pos, query_current_pos
 
 
-def navigate(old_area, des_area):
+# Moves to exsisting area, returns area object
+def navigate(old_area, new_area):
 
-    # TODO: Travel from old area to new area, break down movement into primitives
+    # TODO: Travel from old area to an already exsisting area, breaking down
+    # movement into primitives
 
-    return
+    return area_traveled_to
 
 
-def explore(old_area): # Move to a new area
+def explore(old_area):  # Move to a new area, returns area object
 
     # Test output
     print "Exploring (moving to a new location) ..."
-    beep()
+
+    # Beep to indicate begining of explore step
+    buzzer = Buzzer()
+    buzzer.play(1)
 
     # Create new area and move objects
     new_area = Area()
@@ -56,14 +62,19 @@ def explore(old_area): # Move to a new area
             move.distance = amount
 
     # Calculated final position
-    move.final_pos = move.initial_pos + np.concatenate(move.distance, move.rot_angle) # TODO: Proper function call to concatenate
+    # TODO: Proper function call to concatenate
+    move.final_pos = move.initial_pos + \
+        np.concatenate(move.distance, move.rot_angle)
 
     # Add move to new area's dictionary of moves
     new_area.moves_performed.append(move)
 
     # Take pictures and add to dictionary of pictures
-    # TODO: Get Pictures (ideally some sort of panorama shot)
-    new_area.pics = {}
+    new_area.pics = camera.takePics()
+
+    # Return current area
+    return new_area
+
 
 def sample():  # Sample the Arduino sensors
 
@@ -124,14 +135,32 @@ def get_move_vector():
     # Smooth raw data from sensors
     smooth_data = smoothData(raw_data)
 
+    # Testing prints
+    print "raw_data inside get_move_vector:"
+    print raw_data
+    print "smooth_data inside get_move_vector:"
+    print smooth_data
+
     # Determine position vectors for sensor data (with respect to robot frame)
     pos_vectors = [
         sensors.to_robot(sensor_key, smooth_data) for sensor_key in sensors.s]
 
-    # Combine readings together, using weights, to determine ultimate
-    # vector_direction of travel
+    print "pos_vectors inside get_move_vector:"
+    print pos_vectors
+
+    # Combine readings together using sensor weights
+    weighted_pos_vectors = np.multiply(
+        sensors.get_weights(), pos_vectors)  # TODO: Do this properly
+
+    print "weighted_pos_vectors inside get_move_vector:"
+    print weighted_pos_vectors
+
+    # Combine weighted position vectors to get ultimate direction vector
     # TODO: Check whether this is the proper axis for this
-    direction_vector = np.mean(sensors.apply_weights(pos_vectors), axis=1)
+    direction_vector = np.mean(weighted_pos_vectors, axis=1)
+
+    print "direction_vector inside get_move_vector:"
+    print direction_vector
 
     return direction_vector
 
@@ -164,22 +193,6 @@ if __name__ == '__main__':
 
 #         smooth_data = smooth_data.tolist()
 
-# Write data to MySQL
-#         for j in range(0, sensors.numSensor('HC-SR04')):
-# HC-SR04 Sensor
-# print 'HC-SR04'
-# print j
-# print smooth_data[j]
-# print datetime.datetime.now()
-#             insert_sensor_data(('HC-SR04', j + 1, smooth_data[j][0], datetime.datetime.now()))
-
-#         for j in range(0, sensors.numSensor('TSL2561')):
-# TSL2561 Sensor
-# print 'TSL2561'
-# print NUM_SONAR + j
-# print smooth_data[NUM_SONAR + j]
-# print datetime.datetime.now()
-#             insert_sensor_data(('TSL2561', j + 1, smooth_data[sensors.numSensor('HC-SR04') + j][0], datetime.datetime.now()))
 
 #         print explore_results[:, i]
 

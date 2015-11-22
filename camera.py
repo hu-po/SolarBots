@@ -6,11 +6,12 @@ from time import sleep
 import numpy as np
 import picamera
 import cv2
-from servo import setServo, getServo
+import Servo
 from brain import params
 
 # Initialize camera
-camera = picamera.PiCamera() # TODO determine if this is the same datatype as an .imread('bleh.jpg')
+camera = picamera.PiCamera()
+rawCapture = PiRGBArray(camera)
 
 # Take a test picture and show it
 camera.capture('Camera/testimage.jpg')
@@ -18,12 +19,47 @@ camera.start_preview()
 sleep(10)
 camera.stop_preview()
 
-# TODO: take picture and find features with OpenCV
-	# Possibly use ORB feature detection for speed? Maybe FAST?
+def takePics(): # TODO: take an array of pictures from camera
 
-def moveCam(direction, step=params.p('CAMERA_SERVO_STEP')):
+    # Create servo objects
+    servo1 = Servo(1)
+    servo2 = Servo(2)
 
-	# TODO: move camera based on direction
+    # Take 5 pictures, moving camera between
+    servo1.setServo(0)
+    servo2.setServo(0)
+
+    camera.capture(rawCapture, format="rgb")
+
+    servo1.setServo(0)
+    camera.capture(rawCapture, format="rgb")
+
+    servo1.setServo(0)
+    camera.capture(rawCapture, format="rgb")
+
+    servo1.setServo(0)
+    camera.capture(rawCapture, format="rgb")
+
+    servo1.setServo(0)
+    camera.capture(rawCapture, format="rgb")
+
+    # Return array of images
+    return pics
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # --------- Code for FAST from online:
@@ -33,7 +69,7 @@ fast = cv2.FastFeatureDetector()
 
 # find and draw the keypoints
 kp = fast.detect(img, None)
-img2 = cv2.drawKeypoints(img, kp, color=(255,0,0))
+img2 = cv2.drawKeypoints(img, kp, color=(255, 0, 0))
 
 # Print all default params
 print "Threshold: ", fast.getInt('threshold')
@@ -41,17 +77,17 @@ print "nonmaxSuppression: ", fast.getBool('nonmaxSuppression')
 print "neighborhood: ", fast.getInt('type')
 print "Total Keypoints with nonmaxSuppression: ", len(kp)
 
-cv2.imwrite('fast_true.png',img2)
+cv2.imwrite('fast_true.png', img2)
 
 # Disable nonmaxSuppression
-fast.setBool('nonmaxSuppression',0)
-kp = fast.detect(img,None)
+fast.setBool('nonmaxSuppression', 0)
+kp = fast.detect(img, None)
 
 print "Total Keypoints without nonmaxSuppression: ", len(kp)
 
-img3 = cv2.drawKeypoints(img, kp, color=(255,0,0))
+img3 = cv2.drawKeypoints(img, kp, color=(255, 0, 0))
 
-cv2.imwrite('fast_false.png',img3)
+cv2.imwrite('fast_false.png', img3)
 
 # --------- Code for ORB from online:
 
@@ -59,11 +95,11 @@ cv2.imwrite('fast_false.png',img3)
 orb = cv2.ORB()
 
 # find the keypoints with ORB
-kp = orb.detect(img,None)
+kp = orb.detect(img, None)
 
 # compute the descriptors with ORB
 kp, des = orb.compute(img, kp)
 
 # draw only keypoints location,not size and orientation
-img2 = cv2.drawKeypoints(img,kp,color=(0,255,0), flags=0)
-plt.imshow(img2),plt.show()
+img2 = cv2.drawKeypoints(img, kp, color=(0, 255, 0), flags=0)
+plt.imshow(img2), plt.show()

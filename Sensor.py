@@ -59,6 +59,8 @@ class Sensor:
 
         # TODO: Transform sensor reading to global frame
 
+        new_read = np.dot(T, np.array([reading, 0, 0]).reshape((3, 1)))
+
         # Return new reading
         return new_read
 
@@ -69,11 +71,6 @@ class Sensor:
 
         return len(num)
 
-    # Applies the weight transform to sensor readings
-    def to_robot(self, key, reading):
-
-        # Multiply reading by transform
-        new_read = np.multiply(self.s[key], np.array([reading, 0, 0]).reshape((3, 1))) # TODO: Check this math, reading array needs to be properly sized
-
-        # Return new reading
-        return new_read
+    def get_weights(self):  # Returns a list of sensor weights
+        (_, weights, _) = [item for item in self.s]
+        return weights

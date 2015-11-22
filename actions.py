@@ -17,7 +17,10 @@ GPIO.setup(pins.p('MOTOR2A'), GPIO.OUT)
 GPIO.setup(pins.p('MOTOR2B'), GPIO.OUT)
 GPIO.setup(pins.p('MOTOR2E'), GPIO.OUT)
 
-# Output low signal
+# Setup pin for Piezo buzzer
+GPIO.setup(pins.p('BUZZER'), GPIO.OUT)
+
+# Output low signal on motors
 GPIO.output(pins.p('MOTOR1A'), GPIO.LOW)
 GPIO.output(pins.p('MOTOR1B'), GPIO.LOW)
 GPIO.output(pins.p('MOTOR1E'), GPIO.LOW)
@@ -25,16 +28,23 @@ GPIO.output(pins.p('MOTOR2A'), GPIO.LOW)
 GPIO.output(pins.p('MOTOR2B'), GPIO.LOW)
 GPIO.output(pins.p('MOTOR2E'), GPIO.LOW)
 
-# Initialize PWM for  both motors
+# Initialize PWM for  both motors and buzzer
 E1 = GPIO.PWM(pins.p('MOTOR1E'), params.p('MOTOR_PWM_FREQ'))
 E2 = GPIO.PWM(pins.p('MOTOR2E'), params.p('MOTOR_PWM_FREQ'))
-
+B1 = GPIO.PWM(pins.p('BUZZER'), params.p('BUZZER_FREQ'))
 
 # Change speed of motor by controlling duty cycle
 # def speed(num):
 #     E1.ChangeDutyCycle(num)
 #     E2.ChangeDutyCycle(num + MOTOR_OFFSET_PWR)
 #     return
+
+def beep(): # Beeps the piezo buzzer for specified number of seconds?
+
+    # TODO: beep piezzo buzzer
+    B1.start(0)
+
+    B1.stop()
 
 
 def moveBot(direction, distance=10, num=params.p('MOTOR_DEFAULT_PWR'), continuous_mode=False):
