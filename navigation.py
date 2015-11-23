@@ -18,6 +18,10 @@ from python_mysql_connect import insert_sensor_data, insert_current_pos, query_c
 # Moves to exsisting area, returns area object
 def navigate(old_area, new_area):
 
+    # Beep to indicate begining of navigate step
+    buzzer = Buzzer()
+    buzzer.play(2)
+
     # TODO: Travel from old area to an already exsisting area, breaking down
     # movement into primitives
 

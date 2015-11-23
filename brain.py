@@ -56,8 +56,9 @@ params.addParam(
 params.addParam('MOTOR_PWM_FREQ', 100, 'Frequency of PWM for motors')
 
 # Add Camera Parameters
-params.addParam(
-    'CAMERA_SERVO_STEP', 5, 'Step to increment camera servo in degrees')
+params.addParam('CAMERA_SERVOS',
+                [[0, 0], [70, 0], [110, 0], [0, 70], [0, 110]],
+                'Position of servos for pictures, Note: Size determines number of pictures')
 
 # Create Sensor object
 sensors = Sensor()
