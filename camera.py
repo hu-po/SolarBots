@@ -19,23 +19,30 @@ def takePics(): # TODO: take an array of pictures from camera
     servo1 = Servo(1)
     servo2 = Servo(2)
 
+    # Initialize picture list
+    pics = []
+
     # Take 5 pictures, moving camera between
-    servo1.setServo(0)
-    servo2.setServo(0)
+    for i in range(ser):
+        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
+        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
+        pics.append(camera.capture(rawCapture, format="rgb"))
 
-    camera.capture(rawCapture, format="rgb")
+        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
+        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
+        camera.capture(rawCapture, format="rgb")
 
-    servo1.setServo(0)
-    camera.capture(rawCapture, format="rgb")
+        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
+        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
+        camera.capture(rawCapture, format="rgb")
 
-    servo1.setServo(0)
-    camera.capture(rawCapture, format="rgb")
+        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
+        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
+        camera.capture(rawCapture, format="rgb")
 
-    servo1.setServo(0)
-    camera.capture(rawCapture, format="rgb")
-
-    servo1.setServo(0)
-    camera.capture(rawCapture, format="rgb")
+        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
+        servo2.setServo(params.p['CAMERA_SERVOS'][0][0])
+        camera.capture(rawCapture, format="rgb")
 
     # Return array of images
     return pics
