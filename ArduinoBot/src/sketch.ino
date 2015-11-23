@@ -3,23 +3,23 @@
 
 #define SONAR_NUM     6 // Number or sensors.
 #define MAX_DISTANCE  100 // Maximum distance (in cm) to ping.
-#define PING_INTERVAL  35 //33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
+#define PING_INTERVAL  50 //33 // Milliseconds between sensor pings (29ms is about the min to avoid cross-sensor echo).
 
 unsigned long pingTimer[SONAR_NUM]; // Holds the times when the next ping should happen for each sensor.
 unsigned int cm[SONAR_NUM];         // Where the ping distances are stored.
 uint8_t currentSensor = 0;          // Keeps track of which sensor is active.
 
-TSL2561 tsl_1(TSL2561_ADDR_HIGH);
+TSL2561 tsl_1(TSL2561_ADDR_FLOAT);
 TSL2561 tsl_2(TSL2561_ADDR_LOW);
-TSL2561 tsl_3(TSL2561_ADDR_FLOAT);
+TSL2561 tsl_3(TSL2561_ADDR_HIGH);
 
 NewPing sonar[SONAR_NUM] = {     // Sensor object array.
-  NewPing(00, 00, MAX_DISTANCE),
-  NewPing(00, 00, MAX_DISTANCE),
-  NewPing(00, 00, MAX_DISTANCE),
-  NewPing(00, 00, MAX_DISTANCE),
-  NewPing(00, 00, MAX_DISTANCE),
-  NewPing(00, 00, MAX_DISTANCE) // Each sensor's trigger pin, echo pin, and max distance to ping.
+  NewPing(2, 3, MAX_DISTANCE),
+  NewPing(4, 5, MAX_DISTANCE),
+  NewPing(6, 7, MAX_DISTANCE),
+  NewPing(8, 9, MAX_DISTANCE),
+  NewPing(10, 11, MAX_DISTANCE),
+  NewPing(12, 13, MAX_DISTANCE) // Each sensor's trigger pin, echo pin, and max distance to ping.
 };
 
 void setup() {
@@ -64,17 +64,17 @@ void echoCheck() { // If ping received, set the sensor distance to array.
 
 void SensorCycle() { // Sensor ping cycle complete, do something with the results.
 
-  for (uint8_t i = 1; i < SONAR_NUM; i++) {
+  for (uint8_t i = 0; i < SONAR_NUM; i++) {
     Serial.print(cm[i]);
     Serial.print(",");
   }
 
-// Print out TSL2561 readings as well
-Serial.print(tsl_1.getLuminosity(TSL2561_INFRARED)); Serial.print(",");
-Serial.print(tsl_2.getLuminosity(TSL2561_INFRARED)); Serial.print(",");
-Serial.print(tsl_3.getLuminosity(TSL2561_INFRARED));
+ // Print out TSL2561 readings as well
+ Serial.print(tsl_1.getLuminosity(TSL2561_INFRARED)); Serial.print(",");
+ Serial.print(tsl_2.getLuminosity(TSL2561_INFRARED)); Serial.print(",");
+ Serial.print(tsl_3.getLuminosity(TSL2561_INFRARED));
 
-Serial.println();  // New line to indicate end of sensing cycle
+ Serial.println();  // New line to indicate end of sensing cycle
 
 }
 
