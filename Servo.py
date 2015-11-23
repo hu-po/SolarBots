@@ -11,7 +11,6 @@ class Servo(object):
     def __init__(self, servo_num):
         GPIO.setmode(GPIO.BCM)
         self.servo_num = servo_num
-        self.servi_step = params.p('CAMERA_SERVO_STEP')
         self.servo_pin = pins.p(''.join(['SERVO', self.servo_num]))
         GPIO.setup(self.servo_pin, GPIO.IN)
         GPIO.setup(self.servo_pin, GPIO.OUT)
@@ -22,6 +21,16 @@ class Servo(object):
 
     # Sets the angle for a desired servo
     def setServo(angle):
+
+        # Setup up PWM for servo
+        S = GPIO.PWM(self.servo_pin, angle * 10) # This will send a pulse
+                                          # of 10 times the angle e.g.
+                                          # In = 120, Out = 1200ms pulse
+        S.start(num)
+
+        # Sleep to give it time to get to position and then cleanup
+        S.sleep(2)
+        S.stop()
 
 
     # Gets current angle for a desired servo
@@ -35,9 +44,11 @@ if __name__ == "__main__":
     # Create Servo object and test it out
     servo1 = Servo(1)
     servo1.setServo(20)
+    sleep(2)
     servo1.setServo(40)
 
     # Create Servo object and test it out
     servo2 = Servo(2)
     servo2.setServo(20)
+    sleep(2)
     servo2.setServo(40)

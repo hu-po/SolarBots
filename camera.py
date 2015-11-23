@@ -13,12 +13,6 @@ from brain import params
 camera = picamera.PiCamera()
 rawCapture = PiRGBArray(camera)
 
-# Take a test picture and show it
-camera.capture('Camera/testimage.jpg')
-camera.start_preview()
-sleep(10)
-camera.stop_preview()
-
 def takePics(): # TODO: take an array of pictures from camera
 
     # Create servo objects
