@@ -4,9 +4,9 @@
 
 import serial
 import numpy as np
-import Sensor
-import PinMaster
-import Parameters
+from Sensor import Sensor
+from PinMaster import PinMaster
+from Parameters import Parameters
 import math
 
 # Serial communication with Arduino
