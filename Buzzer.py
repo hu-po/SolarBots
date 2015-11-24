@@ -13,7 +13,7 @@ class Buzzer(object):
 
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
-        self.buzzer_pin = pins.p('BUZZER')
+        self.buzzer_pin = pins.p['BUZZER']
         GPIO.setup(self.buzzer_pin, GPIO.IN)
         GPIO.setup(self.buzzer_pin, GPIO.OUT)
         print("Buzzer ready")
@@ -22,7 +22,7 @@ class Buzzer(object):
         class_name = self.__class__.__name__
         print (class_name, "... done")
 
-    def buzz(self, pitch, duration): # Create buzz given a pitch and duration
+    def buzz(self, pitch, duration):  # Create buzz given a pitch and duration
 
         if(pitch == 0):
             time.sleep(duration)
@@ -50,8 +50,7 @@ class Buzzer(object):
 
         print("Playing tune ", tune)
         if(tune == 1):
-            pitches = [262, 294, 330, 349, 392, 440, 494,
-                       523, 587, 659, 698, 784, 880, 988, 1047]
+            pitches = [262, 784, 880, 988, 1047]
             duration = 0.1
             for p in pitches:
                 self.buzz(p, duration)
