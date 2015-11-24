@@ -4,7 +4,7 @@
 
 import RPi.GPIO as GPIO
 import numpy as np
-from brain import Servo1, Servo2
+from brain import params, pins
 
 class Servo(object):
 

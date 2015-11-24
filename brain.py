@@ -16,14 +16,9 @@ ser = serial.Serial('/dev/ttyACM0',  9600)
 params = Parameters()
 
 # Add Navigation Parameters (name, value, description)
-params.addParam('DATA_SAMPLE_SIZE', 3,
-                'Sample size for data (increase to stabilize at cost of speed)')
+params.addParam('DATA_SAMPLE_SIZE', 3, 'Sample size for data (increase to stabilize at cost of speed)')
 params.addParam('MAX_ITER', 10, 'Maximum number of Sense-Plan-Act Cycles')
-params.addParam('MOTOR_PWR', 30, '0 - 100 speed of motor')
-params.addParam(
-    'EXPLORE_ITER', 4, 'Number of sensor readings in an explore scan')
-params.addParam(
-    'EXPLORE_ANGLE', 360.0, 'Angle to explore during an explore scan')
+
 
 
 # Add SLAM Parameters (name, value, description)
@@ -46,14 +41,12 @@ params.addParam('FOG_RADIUS', 100,
 params.addParam('ROOM_PATH', 'Data/Rooms/', 'Path to saved room objects')
 
 # Add Motor Parameters
-params.addParam(
-    'SEC_PER_TURN', 10, 'Seconds required to complete one full turn')
+params.addParam('SEC_PER_TURN', 10, 'Seconds required to complete one full turn')
 params.addParam('SEC_PER_MOVE', 1, 'Seconds required to move 10cm')
-params.addParam(
-    'MOTOR_DEFAULT_PWR', 30, 'Default starting power for the motor')
-params.addParam(
-    'MOTOR_OFFSET_PWR', -1, 'Difference between Motor 1 and Motor 2')
+params.addParam('MOTOR_DEFAULT_PWR', 30, 'Default starting power for the motor')
+params.addParam('MOTOR_OFFSET_PWR', -1, 'Difference between Motor 1 and Motor 2')
 params.addParam('MOTOR_PWM_FREQ', 100, 'Frequency of PWM for motors')
+params.addParam('MOTOR_PWR', 30, '0 - 100 speed of motor')
 
 # Add Camera Parameters
 params.addParam('CAMERA_SERVOS',
@@ -88,8 +81,8 @@ pins.addPin('SERVO1', 00)  # Horizontal (Side to Side) servo
 pins.addPin('SERVO2', 00)  # Vertical (Up and Down) servo
 pins.addPin('BUZZER', 25)  # Piezo buzzer
 
-# Create Map object
-mapa = Mapa()
+# # Create Map object
+# mapa = Mapa()
 
 
 def main():

@@ -4,23 +4,21 @@
 # determine best sequence of moves for robot to execute.
 
 from brain import ser, params, sensors
-from actions import moveBot, beep
-import Move
-import Area
-import camera
+from motor import moveBot
+from Move import Move
+from Area import Area
+from Buzzer import Buzzer
+# import camera
 
 import numpy as np
 import datetime
-import maptool
-from python_mysql_connect import insert_sensor_data, insert_current_pos, query_current_pos
-
 
 # Moves to exsisting area, returns area object
 def navigate(old_area, new_area):
 
     # Beep to indicate begining of navigate step
     buzzer = Buzzer()
-    buzzer.play(2)
+    buzzer.play(4)
 
     # TODO: Travel from old area to an already exsisting area, breaking down
     # movement into primitives
@@ -30,12 +28,16 @@ def navigate(old_area, new_area):
 
 def explore(old_area):  # Move to a new area, returns area object
 
+    # Set old_area to None if this is first pass
+    if not old_area:
+        old_area = Area()
+
     # Test output
     print "Exploring (moving to a new location) ..."
 
     # Beep to indicate begining of explore step
     buzzer = Buzzer()
-    buzzer.play(1)
+    buzzer.play(5)
 
     # Create new area and move objects
     new_area = Area()
@@ -45,7 +47,7 @@ def explore(old_area):  # Move to a new area, returns area object
     new_area.previous = old_area
 
     # Initial position set to position of previous area
-    move.initial_pos = origin_area.pos
+    move.initial_pos = old_area.pos
 
     # Vector of movement used
     move.move_vector = get_move_vector()
@@ -55,8 +57,8 @@ def explore(old_area):  # Move to a new area, returns area object
     #   - perform motion primitives using moveBot. (forward/backwards with some amount and left/right with some amount)
 
     for (direction, amount) in primitives:
-        moveBot(direction, amount, params.p('MOTOR_PWR'))
-        # EXAMPLE CALL: moveBot('forward', 1, params.p('MOTOR_PWR'))  # Move
+        moveBot(direction, amount, params.p['MOTOR_PWR'])
+        # EXAMPLE CALL: moveBot('forward', 1, params.p['MOTOR_PWR'])  # Move
         # forward 1 unit (10 cm)
 
         # Rotation performed / Distance traveled
@@ -74,7 +76,7 @@ def explore(old_area):  # Move to a new area, returns area object
     new_area.moves_performed.append(move)
 
     # Take pictures and add to dictionary of pictures
-    new_area.pics = camera.takePics()
+    # new_area.pics = camera.takePics()
 
     # Return current area
     return new_area
@@ -96,11 +98,11 @@ def readData():
     print "Reading data ..."
 
     # Create empty data array to store data
-    data = np.empty([params.p('DATA_SAMPLE_SIZE'), (sensors.numSensor(
+    data = np.empty([params.p['DATA_SAMPLE_SIZE'], (sensors.numSensor(
         'HC-SR04') + sensors.numSensor('TSL2561'))])
 
     # Populate empty data array
-    for i in range(0, params.p('DATA_SAMPLE_SIZE')):
+    for i in range(0, params.p['DATA_SAMPLE_SIZE']):
 
         # print data(i,:)
         data[i, :] = sample()
@@ -170,7 +172,7 @@ def get_move_vector():
 
 
 def main():
-    explore()
+    explore(None)
 
 if __name__ == '__main__':
     main()
@@ -180,11 +182,12 @@ if __name__ == '__main__':
 #     print "Exploring current location ..."
 
 # Initialize exploration results matrix
-#     explore_results = np.empty([sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561'), params.p('EXPLORE_ITER')])
+# explore_results = np.empty([sensors.numSensor('HC-SR04') +
+# sensors.numSensor('TSL2561'), params.p['EXPLORE_ITER')])
 
 #     print explore_results
 
-#     for i in range(0, params.p('EXPLORE_ITER')):
+#     for i in range(0, params.p['EXPLORE_ITER')):
 
 # Read in raw data from sensors
 #         raw_data = readData()
@@ -205,6 +208,7 @@ if __name__ == '__main__':
 
 # Rotate robot to get another set of data
 # Ultimately make a 360 degree turn during exploration
-#         moveBot('turnleft', (params.p('EXPLORE_ANGLE') / params.p('EXPLORE_ITER')), params.p('MOTOR_PWR'))
+# moveBot('turnleft', (params.p['EXPLORE_ANGLE') /
+# params.p['EXPLORE_ITER')), params.p['MOTOR_PWR'))
 
 #     return explore_results
