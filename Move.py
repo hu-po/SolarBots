@@ -24,6 +24,9 @@ class Move:
         # Distance traveled
         self.distance = []
 
+        # Sensor sweep for the move (each element is a list (sensor,x,y) where x,y is in global frame)
+        self.sensordata = []
+
     # Push information (along with reading) on the move to the database
     def push_to_database(self, smooth_data):
 
