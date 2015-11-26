@@ -13,6 +13,22 @@ from Buzzer import Buzzer
 import numpy as np
 import datetime
 
+def getMotionPlan(move): # Breaks a move down into motion primitives to be executed by motor functions
+    
+    # Initial position contains X, Y, and Theta of robot
+    move.initial_pos
+
+    # Move vector contains desired movement direction vector
+    move.move_vector
+
+    # Get angle difference between desired movement vector and robot theta
+
+
+    params.p['MOVE_PER_TURN']
+
+    # Return updated move object
+    return move
+
 # Moves to exsisting area, returns area object
 def navigate(old_area, new_area):
 
@@ -55,8 +71,9 @@ def explore(old_area):  # Move to a new area, returns area object
     # TODO: Perform movement based on vector direction
     #   - break down into motion primitives, rounding as necessary
     #   - perform motion primitives using moveBot. (forward/backwards with some amount and left/right with some amount)
+    move = getMotionPlan(move)
 
-    for (direction, amount) in primitives:
+    for (direction, amount) in move.primitives:
         moveBot(direction, amount, params.p['MOTOR_PWR'])
         # EXAMPLE CALL: moveBot('forward', 1, params.p['MOTOR_PWR'])  # Move
         # forward 1 unit (10 cm)
@@ -69,8 +86,7 @@ def explore(old_area):  # Move to a new area, returns area object
 
     # Calculated final position
     # TODO: Proper function call to concatenate
-    move.final_pos = move.initial_pos + \
-        np.concatenate(move.distance, move.rot_angle)
+    move.final_pos = move.initial_pos + np.concatenate(move.distance, move.rot_angle)
 
     # Add move to new area's dictionary of moves
     new_area.moves_performed.append(move)

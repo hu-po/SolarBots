@@ -18,11 +18,14 @@ class Move:
         # Vector of movement used
         self.move_vector = []
 
-        # Rotation performed
+        # Rotation performed    
         self.rot_angle = []
 
         # Distance traveled
         self.distance = []
+
+        # Motion primitives to perform move
+        move.primitives = []
 
         # Sensor sweep for the move (each element is a list (sensor,x,y) where x,y is in global frame)
         self.sensordata = []

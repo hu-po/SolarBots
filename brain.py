@@ -18,8 +18,7 @@ params = Parameters()
 # Add Navigation Parameters (name, value, description)
 params.addParam('DATA_SAMPLE_SIZE', 3, 'Sample size for data (increase to stabilize at cost of speed)')
 params.addParam('MAX_ITER', 10, 'Maximum number of Sense-Plan-Act Cycles')
-
-
+params.addParam('MOVE_PER_TURN', 1, 'How far you want the robot to move each step (increments of 10cm)')
 
 # Add SLAM Parameters (name, value, description)
 params.addParam('RAND_DIST_MU', 0, 'Center of distribution (cm)')
@@ -33,7 +32,7 @@ params.addParam('OBSERVATION_NOISE', 0.1, 'Kalman Filter observation noise')
 
 # Add Tuning Parameters
 params.addParam('DISTANCE_WEIGHT', [1, 1, 0.2],
-                'Weighting of [X, Y, Theta] each when determining ditance number')
+                'Weighting of [X, Y, Theta] each when determining distance metric')
 params.addParam('FOG_RADIUS', 100,
                 'Distance metric to use (centered around current position) for looking for close nodes')
 
