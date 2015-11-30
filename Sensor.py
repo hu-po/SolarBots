@@ -70,14 +70,17 @@ class Sensor:
         # Return new reading (as a list)
         return new_read
 
-    # Transform sensor reading to global frame
-    def to_global(self, key, reading):
+    # Transform sensor reading to global frame, requires position of robot in global frame
+    def to_global(self, key, reading, pos):
 
-        # TODO: Transform sensor reading to global frame
+        # Get global transformation matrix
+        T_global = calculateTransform(pos)
 
-        new_read = np.dot(T, np.array([reading, 0, 0]).reshape((3, 1)))
+        # Get robot frame transformation matrix using key (name, num) to get right sensor
+        T_robot = self.s[key][2] # Transform is 3rd element in dictionary entry
 
-        # print new_read
+        # Transform sensor reading to global frame
+        new_read = np.dot(T_global, np.dot(T_robot, np.array([reading, 0, 0, 1]).reshape((3, 1))))
 
         # Remove extra digit from end
         new_read = new_read[:-1]

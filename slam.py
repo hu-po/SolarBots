@@ -9,7 +9,6 @@ from brain import RAND_DIST_MU, RAND_DIST_SIGMA, RAND_ANG_MU, RAND_ANG_SIGMA, RA
 import pcl
 from pcl.registration import icp, gicp, icp_nl
 
-
 # Create map
 # TODO: python pcl
 

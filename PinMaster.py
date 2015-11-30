@@ -2,7 +2,6 @@
 # Project: https://github.com/HugoCMU/SolarTree
 # Description: PinMaster class stores all of the pins in a PinMaster object
 
-
 class PinMaster:
 
     def __init__(self):

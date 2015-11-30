@@ -3,11 +3,25 @@
 # Description: Each move object contains information on the move that
 # brought robot from previous room to this next room
 
+import numpy as np
+import numpy.linalg as la
+from brain import params, sensors
 # from python_mysql_connect import insert_sensor_data, insert_current_pos, query_current_pos
+
+# Returns the angle in radians between vectors 'v1' and 'v2'
+def vector_angle(v1, v2):
+    cosang = np.dot(v1, v2)
+    sinang = la.norm(np.cross(v1, v2))
+    return np.arctan2(sinang, cosang)
 
 class Move:
 
     def __init__(self):
+
+        # Type of move
+        # - Virtual: move was performed virtually to connect nodes in the graph
+        # - Real: move was performed by the robot and has sensor data to prove it
+        self.type = None
 
         # Initial position [X, Y, Z, Theta]
         self.initial_pos = [0, 0, 0, 0]
@@ -34,7 +48,36 @@ class Move:
         self.raw_data = []
         self.smooth_data = []
         self.pos_vectors = []
+        self.global_pos_vectors = []
         self.weighted_pos_vectors = []
+
+    # Breaks a move down into motion primitives to be executed by motor functions
+    def getMotionPlan(self):
+
+    # Get angle difference between desired movement vector and generic
+    # "forward vector"
+    self.rot_angle = vector_angle(
+        params.p['FORWARD_VECTOR'], self.direction_vector)
+
+    # Get forward motion from desired movement vector
+    self.distance = params.p['MOVE_PER_TURN'] * self.direction_vector
+
+    # Set movement delta list (delX, delY, delZ, delTheta)
+    self.delta = self.distance.tolist()
+    self.delta.append(self.rot_angle)
+
+    # Determine direction of rotation
+    if self.rot_angle < 0:
+        self.primitives.append(('left', abs(self.rot_angle)))
+
+    if self.rot_angle > 0:
+        self.primitives.append(('right', abs(self.rot_angle)))
+
+    # Determine direction of movement
+    # TODO: eventually return 'backwards' if the angle rotation required is
+    # smaller
+    self.primitives.append(('forward', la.norm(self.distance)))
+
 
     # Push information (along with reading) on the move to the database
     def push_to_database(self, smooth_data):

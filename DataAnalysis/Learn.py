@@ -1,13 +1,19 @@
 # Author: Hugo P.
 # Project: https://github.com/HugoCMU/SolarTree
-# Description: Program reads in Room object and combines areas into more solid areas
+# Description: Program reads in Room object and clusters/connects areas in the room
+
+from Room import Room
+from Move import Move
+from Area import Area
 
 # Initialize room object
 room = Room()
 
 # Read in room object from text file
-room.read_from_text('Rooms/2015_11_22.txt')
+room.read_from_text('room2015-11-30.txt')
 
-# Loop through room object and gather areas
+# Perform knn clustering on areas
+room.cluster()
 
-def cluster(areas, n): # Perform knn clustering on areas, returns clustered areas
+# Connect remaining areas with moves
+room.connect_areas()

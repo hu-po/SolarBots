@@ -6,7 +6,6 @@ import pickle
 import datetime
 from brain import params
 
-
 class Room:
 
     def __init__(self):
@@ -17,12 +16,11 @@ class Room:
         # List of areas in room
         self.areas = []
 
-    # Finds the closest area associated with a position
-    def closest_pos(self, area):
+    # Finds the areas within defined fog radius of the given area
+    def closest_areas(self, area):
 
-        # Initialize closest area, and smallest distance so far
-        closest = None
-        smallest_dist = params.p['FOG_RADIUS']
+        # Initialize closest areas, and smallest distance so far
+        closest = []
 
         # Loop through all the areas in the room
         for area_iterator in self.areas:
@@ -31,12 +29,29 @@ class Room:
             new_dist = area.distance_to_area(area_iterator)
 
             # If area is closer than current closest, re-assing
-            if new_dist < smallest_dist:
-                closest = area
-                smallest_dist = new_dist
+            if new_dist < params.p['FOG_RADIUS']:
+                closest.append((area, new_dist))
 
         # Return the closest to position
         return closest
+
+    def connect_areas(self): # Connect areas with moves according to fog radius
+
+        # Loop through all the areas in the room    
+        for area in self.areas:
+
+            # Get closest areas to each area
+            closest = self.closest_areas(area)
+
+            # Loop through all the areas in list of closest
+            for (close_area, distance) in closest:
+
+                # Create virutal move between areas
+                area.virtualmove(close_area)
+
+    def cluster(self, n): # Perform knn clustering on areas, returns clustered areas
+
+        # Use image histograms (or image feature vectors of some sort)
 
     # Loads a room from text file #TODO: eventually this has to be put in a database
     def load_room(filename):

@@ -1,7 +1,7 @@
+# Author: Hugo P.
 # Project: https://github.com/HugoCMU/SolarTree
 # Description: Parameters class defines parameter dictionary, which
 # contains robot parameters
-
 
 class Parameters:
 

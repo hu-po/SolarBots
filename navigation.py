@@ -12,49 +12,8 @@ import time
 # import camera
 # from kalmanfilter import kalman
 
-
 import numpy as np
 import numpy.linalg as la
-
-
-# Returns the angle in radians between vectors 'v1' and 'v2'
-def vector_angle(v1, v2):
-    cosang = np.dot(v1, v2)
-    sinang = la.norm(np.cross(v1, v2))
-    return np.arctan2(sinang, cosang)
-
-# Breaks a move down into motion primitives to be executed by motor functions
-
-
-def getMotionPlan(move):
-
-    # Get angle difference between desired movement vector and generic
-    # "forward vector"
-    move.rot_angle = vector_angle(
-        params.p['FORWARD_VECTOR'], move.direction_vector)
-
-    # Get forward motion from desired movement vector
-    move.distance = params.p['MOVE_PER_TURN'] * move.direction_vector
-
-    # Set movement delta list (delX, delY, delZ, delTheta)
-    move.delta = move.distance.tolist()
-    move.delta.append(move.rot_angle)
-
-    # Determine direction of rotation
-    if move.rot_angle < 0:
-        move.primitives.append(('left', abs(move.rot_angle)))
-
-    if move.rot_angle > 0:
-        move.primitives.append(('right', abs(move.rot_angle)))
-
-    # Determine direction of movement
-    # TODO: eventually return 'backwards' if the angle rotation required is
-    # smaller
-    move.primitives.append(('forward', la.norm(move.distance)))
-
-    # Return updated move object
-    return move
-
 
 # Moves to exsisting area, returns area object
 def navigate(old_area, new_area):
@@ -86,6 +45,9 @@ def explore(old_area=None):  # Move to a new area, returns area object
     new_area = Area()
     move = Move()
 
+    # Make sure move is set as a real move (performed by robot)
+    move.type = "Real"
+
     # Link it to the previous object
     new_area.previous = old_area
 
@@ -96,7 +58,7 @@ def explore(old_area=None):  # Move to a new area, returns area object
     move = get_move_vector(move)
 
     # Break down movement vector into motion primitives that robot can execute
-    move = getMotionPlan(move)
+    move.getMotionPlan()
 
     for (direction, amount) in move.primitives:
         print "Moving" + str(direction) + " " + str(amount)
@@ -185,6 +147,10 @@ def get_move_vector(move):
     move.pos_vectors = [sensors.to_robot(sensors.sensor_names[i], move.smooth_data[i])
                         for i in range(len(sensors.sensor_names))]
 
+    # Determine position vectors for sensor data (with respect to global frame)
+    move.pos_vectors = [sensors.to_global(sensors.sensor_names[i], move.smooth_data[i], move.initial_pos)
+                        for i in range(len(sensors.sensor_names))]
+
     # Combine readings together using sensor weights
     for i in range(len(move.pos_vectors)):
         # Second element in sensor dictionary entry is sensor weight
@@ -206,6 +172,8 @@ def get_move_vector(move):
     # print move.smooth_data
     # print "pos_vectors inside get_move_vector:"
     # print move.pos_vectors
+    # print "global_pos_vectors inside get_move_vector:"
+    # print move.global_pos_vectors
     # print "weighted_pos_vectors inside get_move_vector:"
     # print move.weighted_pos_vectors
     # print "direction_vector inside get_move_vector:"
@@ -220,39 +188,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# --------------------- OLD CODE
-# def explore():
-#     print "Exploring current location ..."
-
-# Initialize exploration results matrix
-# explore_results = np.empty([sensors.numSensor('HC-SR04') +
-# sensors.numSensor('TSL2561'), params.p['EXPLORE_ITER')])
-
-#     print explore_results
-
-#     for i in range(0, params.p['EXPLORE_ITER')):
-
-# Read in raw data from sensors
-#         raw_data = readData()
-
-# Smooth raw data from sensors
-#         smooth_data = smoothData(raw_data)
-
-# print raw_data
-# print smooth_data
-
-#         smooth_data = smooth_data.tolist()
-
-
-#         print explore_results[:, i]
-
-# Store smooth data in exploration results matrix
-#         explore_results[:, i] = np.array(smooth_data).flatten()
-
-# Rotate robot to get another set of data
-# Ultimately make a 360 degree turn during exploration
-# moveBot('turnleft', (params.p['EXPLORE_ANGLE') /
-# params.p['EXPLORE_ITER')), params.p['MOTOR_PWR'))
-
-#     return explore_results
