@@ -14,8 +14,8 @@ class Area:
         # Initialize dictionary of pictures
         self.pics = {}
 
-        # Define position of area (X, Y, and Theta)
-        self.pos = []
+        # Initialize position of area (X, Y, Z, and Theta)
+        self.pos = [0, 0, 0, 0]
 
         # Previous areas (creating a graph)
         self.previous = []

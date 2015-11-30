@@ -8,6 +8,7 @@ from Sensor import Sensor
 from PinMaster import PinMaster
 from Parameters import Parameters
 import math
+import sys
 
 # Serial communication with Arduino
 ser = serial.Serial('/dev/ttyACM0',  9600)
@@ -19,6 +20,8 @@ params = Parameters()
 params.addParam('DATA_SAMPLE_SIZE', 3, 'Sample size for data (increase to stabilize at cost of speed)')
 params.addParam('MAX_ITER', 10, 'Maximum number of Sense-Plan-Act Cycles')
 params.addParam('MOVE_PER_TURN', 1, 'How far you want the robot to move each step (increments of 10cm)')
+params.addParam('TIMEOUT', 0.1, 'How many seconds until sensor loop times out and returns a bunch of zeros')
+params.addParam('FORWARD_VECTOR', [0, 1, 0], 'Describes the forward (Theta = 0) direction in the robot frame')
 
 # Add SLAM Parameters (name, value, description)
 params.addParam('RAND_DIST_MU', 0, 'Center of distribution (cm)')
@@ -42,10 +45,10 @@ params.addParam('ROOM_PATH', 'Data/Rooms/', 'Path to saved room objects')
 # Add Motor Parameters
 params.addParam('SEC_PER_TURN', 10, 'Seconds required to complete one full turn')
 params.addParam('SEC_PER_MOVE', 1, 'Seconds required to move 10cm')
-params.addParam('MOTOR_DEFAULT_PWR', 30, 'Default starting power for the motor')
+params.addParam('MOTOR_DEFAULT_PWR', 50, 'Default starting power for the motor')
 params.addParam('MOTOR_OFFSET_PWR', -1, 'Difference between Motor 1 and Motor 2')
-params.addParam('MOTOR_PWM_FREQ', 100, 'Frequency of PWM for motors')
-params.addParam('MOTOR_PWR', 30, '0 - 100 speed of motor')
+params.addParam('MOTOR_PWM_FREQ', 357, 'Frequency of PWM for motors')
+params.addParam('MOTOR_PWR', 50, '0 - 100 speed of motor')
 
 # Add Camera Parameters
 params.addParam('CAMERA_SERVOS',
@@ -70,15 +73,15 @@ sensors.addSensor('TSL2561', 3, 5, [0,    8.5,  0, 0,  5 * (math.pi / 6)])
 pins = PinMaster()
 
 # Add pins to pin dictionary
-pins.addPin('MOTOR1A', 16)
-pins.addPin('MOTOR1B', 20)  # Right Motor
-pins.addPin('MOTOR1E', 21)
-pins.addPin('MOTOR2A', 13)  # Left Motor
-pins.addPin('MOTOR2B', 19)
-pins.addPin('MOTOR2E', 26)
+pins.addPin('MOTOR1A', 23) # 16)
+pins.addPin('MOTOR1B', 24) # 20)  # Right Motor
+pins.addPin('MOTOR1E', 25) # 21)
+pins.addPin('MOTOR2A', 17) # 13)  # Left Motor
+pins.addPin('MOTOR2B', 27) # 19)
+pins.addPin('MOTOR2E', 22) # 26)
 pins.addPin('SERVO1', 00)  # Horizontal (Side to Side) servo
 pins.addPin('SERVO2', 00)  # Vertical (Up and Down) servo
-pins.addPin('BUZZER', 25)  # Piezo buzzer
+pins.addPin('BUZZER', 4) #25)  # Piezo buzzer
 
 # # Create Map object
 # mapa = Mapa()
@@ -88,30 +91,40 @@ def main():
 
     print "Importing functions ..."
 
-    from python_mysql_connect import connect, insert_current_pos, query_current_pos
+    # from python_mysql_connect import connect, insert_current_pos, query_current_pos
     from motor import GPIOclean
-    from maptool import pull_map
-    from slam import slamfunc
-    from kalmanfilter import kalman
-    from navigation import navigate, explore
+    from Room import Room
+    import navigation
+    # from maptool import pull_map
+    # from slam import slamfunc
 
-    print "Connecting to database ..."
-    connect()
+    # print "Connecting to database ..."
+    # connect()
 
-    print "Downloading map from database ..."
-    pull_map()
+    # print "Downloading map from database ..."
+    # pull_map()
+
+    room = Room()
+    if len(sys.argv) > 1:
+        print "Loading up Room: " + str(sys.argv[1])
+        room.load_room()
+    else:
+        print "No Room specified, using empty Room ..."
 
     print "Starting main exploration loop ..."
 
-    for i in range(0, params.p('MAX_ITER')):
+    for i in range(0, params.p['MAX_ITER']):
 
         # Explore (Move to a new area)
-        explore()
+        navigation.explore()
 
     print "Exited main exploration loop ..."
 
-    print "Pushing map to database ..."
-    push_map()
+    print "Storing room to file..."
+    room.store_room()
+
+    # print "Pushing map to database ..."
+    # push_map()
 
     print "Clean up motor GPIO ..."
     GPIOclean()

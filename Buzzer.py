@@ -4,7 +4,7 @@
 # Piezzo buzzer
 
 
-from brain import params, pins
+from brain import ser, params, pins
 import RPi.GPIO as GPIO  # import the GPIO library
 import time  # import the time library
 

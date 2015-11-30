@@ -38,38 +38,57 @@ class Sensor:
         # Initialize sensor dictionary
         self.s = {}
 
+        # Initialize list of sensor names
+        self.sensor_names = []
+
     def addSensor(self, name, num, weight, location):
 
         # Name, number, location (in robot frame), and transformation (to robot
         # frame) of sensor
         self.s[(name, num)] = (location, weight, calculateTransform(location))
 
-    # Transform sonar sensor reading to robot frame
+        # Add sensor name to list of names (Note* Order of this determines sampling order)
+        self.sensor_names.append((name, num))
+
+    # Transform sensor reading to robot frame
     def to_robot(self, key, reading):
 
         # Get proper transform by using key (name, num) to get right sensor
-        (_, _, T) = self.s[key]
+        T = self.s[key][2] # Transform is 3rd element in dictionary entry
+
+        # print T
+        # print np.array([reading, 0, 0, 1]).reshape((4, 1))
 
         # Multiply reading by transform
-        new_read = np.dot(T, np.array([reading, 0, 0]).reshape((3, 1)))
+        new_read = np.dot(T, np.array([reading, 0, 0, 1]).reshape((4, 1)))
 
-        # Return new reading
+        # print new_read
+
+        # Remove extra digit from end
+        new_read = new_read.tolist()[:-1]
+
+        # Return new reading (as a list)
         return new_read
 
-    # Transform sonar sensor reading to global frame
-    def to_global(key, reading):
+    # Transform sensor reading to global frame
+    def to_global(self, key, reading):
 
         # TODO: Transform sensor reading to global frame
 
         new_read = np.dot(T, np.array([reading, 0, 0]).reshape((3, 1)))
 
-        # Return new reading
+        # print new_read
+
+        # Remove extra digit from end
+        new_read = new_read[:-1]
+
+        # Return new reading (as a list)
         return new_read
 
-    def numSensor(self, name):  # Returns the number of a type of sensor
+    def numSensor(self, names):  # Returns the number of a type of sensor
 
-        # Determine number of sensors with given name
-        num = [x[0] for x in self.s.keys() if x[0] == name]
+        # Determine number of sensors with given names
+        num = [x[0] for x in self.s.keys() if x[0] in names]
 
         return len(num)
 

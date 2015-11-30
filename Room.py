@@ -17,45 +17,45 @@ class Room:
         # List of areas in room
         self.areas = []
 
-        # Finds the closest area associated with a position
-        def closest_pos(self, area):
+    # Finds the closest area associated with a position
+    def closest_pos(self, area):
 
-            # Initialize closest area, and smallest distance so far
-            closest = None
-            smallest_dist = params.p('FOG_RADIUS')
+        # Initialize closest area, and smallest distance so far
+        closest = None
+        smallest_dist = params.p['FOG_RADIUS']
 
-            # Loop through all the areas in the room
-            for area_iterator in self.areas:
+        # Loop through all the areas in the room
+        for area_iterator in self.areas:
 
-                # Find distance between areas
-                new_dist = area.distance_to_area(area_iterator)
+            # Find distance between areas
+            new_dist = area.distance_to_area(area_iterator)
 
-                # If area is closer than current closest, re-assing
-                if new_dist < smallest_dist:
-                    closest = area
-                    smallest_dist = new_dist
+            # If area is closer than current closest, re-assing
+            if new_dist < smallest_dist:
+                closest = area
+                smallest_dist = new_dist
 
-            # Return the closest to position
-            return closest
+        # Return the closest to position
+        return closest
 
-        # Loads a room from text file #TODO: eventually this has to be put in a database
-        def load_room(filename):
+    # Loads a room from text file #TODO: eventually this has to be put in a database
+    def load_room(filename):
 
-            # Load room object from file using pickle
-            f = open(filename)
-            room = pickle.load(''.join([params.p('ROOM_PATH'), filename]))
-            f.close()
+        # Load room object from file using pickle
+        f = open(filename)
+        room = pickle.load(''.join([params.p['ROOM_PATH'], filename]))
+        f.close()
 
-            # Return room object
-            return room
+        # Return room object
+        return room
 
-        # Stores a room_picsm to a text file #TODO: eventually put in database
-        def store_room(self):
+    # Stores a room_picsm to a text file #TODO: eventually put in database
+    def store_room(self):
 
-            # Get date
-            date = datetime.datetime.now().strftime("%Y-%m-%d")
+        # Get date
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
 
-            # Store room object in file using pickle
-            f = open(''.join([params.p('ROOM_PATH'), 'room', date, '.pckl']), 'w')
-            pickle.dump(self, f)
-            f.close()
+        # Store room object in file using pickle
+        f = open(''.join([params.p['ROOM_PATH'], 'room', date, '.pckl']), 'w')
+        pickle.dump(self, f)
+        f.close()

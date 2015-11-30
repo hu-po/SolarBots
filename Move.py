@@ -9,26 +9,32 @@ class Move:
 
     def __init__(self):
 
-        # Initial position
-        self.initial_pos = []
+        # Initial position [X, Y, Z, Theta]
+        self.initial_pos = [0, 0, 0, 0]
 
-        # Calculated final position
-        self.final_pos = []
+        # Calculated final position [X, Y, Z, Theta]
+        self.final_pos = [0, 0, 0, 0]
 
         # Vector of movement used
-        self.move_vector = []
+        self.direction_vector = []
 
-        # Rotation performed    
+        # Rotation performed
         self.rot_angle = []
 
         # Distance traveled
         self.distance = []
 
         # Motion primitives to perform move
-        move.primitives = []
+        self.primitives = []
 
-        # Sensor sweep for the move (each element is a list (sensor,x,y) where x,y is in global frame)
-        self.sensordata = []
+        # Motion delta (delX, delY, delZ, delTheta)
+        self.delta = [0, 0, 0, 0]
+
+        # Sensor data for the move (populated in navigation.get_move_vector)
+        self.raw_data = []
+        self.smooth_data = []
+        self.pos_vectors = []
+        self.weighted_pos_vectors = []
 
     # Push information (along with reading) on the move to the database
     def push_to_database(self, smooth_data):

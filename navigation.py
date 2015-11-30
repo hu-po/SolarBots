@@ -8,26 +8,53 @@ from motor import moveBot
 from Move import Move
 from Area import Area
 from Buzzer import Buzzer
+import time
 # import camera
+# from kalmanfilter import kalman
+
 
 import numpy as np
-import datetime
-
-def getMotionPlan(move): # Breaks a move down into motion primitives to be executed by motor functions
-    
-    # Initial position contains X, Y, and Theta of robot
-    move.initial_pos
-
-    # Move vector contains desired movement direction vector
-    move.move_vector
-
-    # Get angle difference between desired movement vector and robot theta
+import numpy.linalg as la
 
 
-    params.p['MOVE_PER_TURN']
+# Returns the angle in radians between vectors 'v1' and 'v2'
+def vector_angle(v1, v2):
+    cosang = np.dot(v1, v2)
+    sinang = la.norm(np.cross(v1, v2))
+    return np.arctan2(sinang, cosang)
+
+# Breaks a move down into motion primitives to be executed by motor functions
+
+
+def getMotionPlan(move):
+
+    # Get angle difference between desired movement vector and generic
+    # "forward vector"
+    move.rot_angle = vector_angle(
+        params.p['FORWARD_VECTOR'], move.direction_vector)
+
+    # Get forward motion from desired movement vector
+    move.distance = params.p['MOVE_PER_TURN'] * move.direction_vector
+
+    # Set movement delta list (delX, delY, delZ, delTheta)
+    move.delta = move.distance.tolist()
+    move.delta.append(move.rot_angle)
+
+    # Determine direction of rotation
+    if move.rot_angle < 0:
+        move.primitives.append(('left', abs(move.rot_angle)))
+
+    if move.rot_angle > 0:
+        move.primitives.append(('right', abs(move.rot_angle)))
+
+    # Determine direction of movement
+    # TODO: eventually return 'backwards' if the angle rotation required is
+    # smaller
+    move.primitives.append(('forward', la.norm(move.distance)))
 
     # Return updated move object
     return move
+
 
 # Moves to exsisting area, returns area object
 def navigate(old_area, new_area):
@@ -42,7 +69,7 @@ def navigate(old_area, new_area):
     return area_traveled_to
 
 
-def explore(old_area):  # Move to a new area, returns area object
+def explore(old_area=None):  # Move to a new area, returns area object
 
     # Set old_area to None if this is first pass
     if not old_area:
@@ -66,27 +93,20 @@ def explore(old_area):  # Move to a new area, returns area object
     move.initial_pos = old_area.pos
 
     # Vector of movement used
-    move.move_vector = get_move_vector()
+    move = get_move_vector(move)
 
-    # TODO: Perform movement based on vector direction
-    #   - break down into motion primitives, rounding as necessary
-    #   - perform motion primitives using moveBot. (forward/backwards with some amount and left/right with some amount)
+    # Break down movement vector into motion primitives that robot can execute
     move = getMotionPlan(move)
 
     for (direction, amount) in move.primitives:
-        moveBot(direction, amount, params.p['MOTOR_PWR'])
-        # EXAMPLE CALL: moveBot('forward', 1, params.p['MOTOR_PWR'])  # Move
-        # forward 1 unit (10 cm)
+        print "Moving" + str(direction) + " " + str(amount)
+        # moveBot(direction, amount, params.p['MOTOR_PWR'])
 
-        # Rotation performed / Distance traveled
-        if direction in ['left', 'right']:
-            move.rot_angle = amount
-        if direction in ['forward', 'backward']:
-            move.distance = amount
+    # Get final position by summing initial position and delta
+    move.final_pos = [init + delt for init, delt in zip(move.initial_pos, move.delta)]
 
-    # Calculated final position
-    # TODO: Proper function call to concatenate
-    move.final_pos = move.initial_pos + np.concatenate(move.distance, move.rot_angle)
+    # TODO: put a kalman filter on the movement. Use camera and sonar as
+    # truth? Not sure here
 
     # Add move to new area's dictionary of moves
     new_area.moves_performed.append(move)
@@ -99,92 +119,100 @@ def explore(old_area):  # Move to a new area, returns area object
 
 
 def sample():  # Sample the Arduino sensors
+    print "inside sample()"
 
+    # Set timeout time (2 seconds)
+    timeout = time.time() + params.p['TIMEOUT']
+
+    # Initialize points list and begin loop
     points = []
-    points = filter('', points)
-    while len(points) != sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561'):
+    while len(points) != sensors.numSensor(['HC-SR04', 'TSL2561']):
         points = ser.readline().strip().split(',')
-        # print points
-        # print len(points)
-        # print "garbage"
+
+        # If function times out, set points to empty array and break
+        if time.time() > timeout:
+            points = [0] * (sensors.numSensor(['HC-SR04', 'TSL2561']))
+            break
+
     return points
 
 
 def readData():
     print "Reading data ..."
 
-    # Create empty data array to store data
-    data = np.empty([params.p['DATA_SAMPLE_SIZE'], (sensors.numSensor(
-        'HC-SR04') + sensors.numSensor('TSL2561'))])
+    # Create empty data list to store data
+    data = []
 
     # Populate empty data array
-    for i in range(0, params.p['DATA_SAMPLE_SIZE']):
-
-        # print data(i,:)
-        data[i, :] = sample()
+    for i in range(params.p['DATA_SAMPLE_SIZE']):
+        data.append(sample())
 
     return data
 
 
 def smoothData(data):
-
     print "Smoothing data ..."
 
     # Create empty data array to store smooth data
-    data_smooth = np.empty(
-        [sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561'), 1])
+    data_smooth = []
 
     # Simple median smoothing
-    for i in range(0, sensors.numSensor('HC-SR04') + sensors.numSensor('TSL2561')):
+    for i in range(len(data[0])):
+
+        # Make a list of all the different readings from one
+        strip = [sample[i] for sample in data]
+
+        # Add them to data_smooth
+        data_smooth.append(np.median(np.array(strip)))
+
         # print i
         # print data_smooth[i]
-        # print data[:, i]
-        # print np.median(data[:, i])
-        data_smooth[i] = np.median(data[:, i])
 
-    # TODO: More ridiculous smoothing
-
-    return data_smooth.tolist()
+    return data_smooth
 
 
 # Performs movement based on gradient direction of sensor readings.
 # Returns vector direction of movement
-def get_move_vector():
+def get_move_vector(move):
 
     # Read in raw data from sensors
-    raw_data = readData()
+    move.raw_data = readData()
 
     # Smooth raw data from sensors
-    smooth_data = smoothData(raw_data)
-
-    # Testing prints
-    print "raw_data inside get_move_vector:"
-    print raw_data
-    print "smooth_data inside get_move_vector:"
-    print smooth_data
+    move.smooth_data = smoothData(move.raw_data)
 
     # Determine position vectors for sensor data (with respect to robot frame)
-    pos_vectors = [
-        sensors.to_robot(sensor_key, smooth_data) for sensor_key in sensors.s]
-
-    print "pos_vectors inside get_move_vector:"
-    print pos_vectors
+    move.pos_vectors = [sensors.to_robot(sensors.sensor_names[i], move.smooth_data[i])
+                        for i in range(len(sensors.sensor_names))]
 
     # Combine readings together using sensor weights
-    weighted_pos_vectors = np.multiply(
-        sensors.get_weights(), pos_vectors)  # TODO: Do this properly
-
-    print "weighted_pos_vectors inside get_move_vector:"
-    print weighted_pos_vectors
+    for i in range(len(move.pos_vectors)):
+        # Second element in sensor dictionary entry is sensor weight
+        sensor_weight = sensors.s[sensors.sensor_names[i]][1]
+        # Multiply pos readings by sensor weight
+        weighted_vector = np.multiply(
+            sensor_weight, move.pos_vectors[i]).tolist()
+        move.weighted_pos_vectors.append(
+            [item for sublist in weighted_vector for item in sublist])  # Flatten result
 
     # Combine weighted position vectors to get ultimate direction vector
-    # TODO: Check whether this is the proper axis for this
-    direction_vector = np.mean(weighted_pos_vectors, axis=1)
+    move.direction_vector = np.mean(
+        np.array(move.weighted_pos_vectors), axis=0)
 
-    print "direction_vector inside get_move_vector:"
-    print direction_vector
+    # Testing prints
+    # print "raw_data inside get_move_vector:"
+    # print move.raw_data
+    # print "smooth_data inside get_move_vector:"
+    # print move.smooth_data
+    # print "pos_vectors inside get_move_vector:"
+    # print move.pos_vectors
+    # print "weighted_pos_vectors inside get_move_vector:"
+    # print move.weighted_pos_vectors
+    # print "direction_vector inside get_move_vector:"
+    # print move.direction_vector
 
-    return direction_vector
+    # Return move object
+    return move
 
 
 def main():
