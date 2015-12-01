@@ -13,7 +13,7 @@ from brain import params
 camera = picamera.PiCamera()
 rawCapture = PiRGBArray(camera)
 
-def takePics(): # TODO: take an array of pictures from camera
+def takePics(): # Take an array of pictures using the camera
 
     # Create servo objects
     servo1 = Servo(1)
@@ -47,7 +47,11 @@ def takePics(): # TODO: take an array of pictures from camera
     # Return array of images
     return pics
 
+def extractFeatures(): # Extract a feature vector from a series of images
 
+    # TODO: SIFT features? (Histograms seems a bit savage)
+
+    return features
 
 
 

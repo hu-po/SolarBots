@@ -73,15 +73,15 @@ sensors.addSensor('TSL2561', 3, 5, [0,    8.5,  0, 0,  5 * (math.pi / 6)])
 pins = PinMaster()
 
 # Add pins to pin dictionary
-pins.addPin('MOTOR1A', 23) # 16)
-pins.addPin('MOTOR1B', 24) # 20)  # Right Motor
-pins.addPin('MOTOR1E', 25) # 21)
-pins.addPin('MOTOR2A', 17) # 13)  # Left Motor
-pins.addPin('MOTOR2B', 27) # 19)
-pins.addPin('MOTOR2E', 22) # 26)
-pins.addPin('SERVO1', 00)  # Horizontal (Side to Side) servo
-pins.addPin('SERVO2', 00)  # Vertical (Up and Down) servo
-pins.addPin('BUZZER', 4) #25)  # Piezo buzzer
+pins.addPin('MOTOR1A', 18)
+pins.addPin('MOTOR1B', 23)  # Right Motor
+pins.addPin('MOTOR1E', 24)
+pins.addPin('MOTOR2A', 17)  # Left Motor
+pins.addPin('MOTOR2B', 27)
+pins.addPin('MOTOR2E', 22)
+pins.addPin('SERVO1',  5)  # Horizontal (Side to Side) servo
+pins.addPin('SERVO2', 13)  # Vertical (Up and Down) servo
+pins.addPin('BUZZER', 4)   # Piezo buzzer
 
 # # Create Map object
 # mapa = Mapa()
@@ -116,7 +116,10 @@ def main():
     for i in range(0, params.p['MAX_ITER']):
 
         # Explore (Move to a new area)
-        navigation.explore()
+        new_area = navigation.explore()
+
+        # Add area to room object
+        room.areas.append(new_area)
 
     print "Exited main exploration loop ..."
 

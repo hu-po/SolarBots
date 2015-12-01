@@ -16,6 +16,17 @@ class Room:
         # List of areas in room
         self.areas = []
 
+    def lookup_area(self, area_name): # Find an area with an area name
+
+        return area for area in self.areas if area.name = area_name else None
+
+    def lookup_group(self, group_name): # Returns areas associated with a certain group
+
+        # Get areas with 
+        group = [area for area in self.areas if group_name in area.groups]
+
+        return group
+
     # Finds the areas within defined fog radius of the given area
     def closest_areas(self, area):
 
@@ -51,7 +62,26 @@ class Room:
 
     def cluster(self, n): # Perform knn clustering on areas, returns clustered areas
 
-        # Use image histograms (or image feature vectors of some sort)
+        # TODO: Cluster using:
+        #   - Image feature vectors (Histogram, SIFT?)
+        #   - Location
+
+        # Each cluster will get a area group name
+        clusters = []
+
+        # Loop through all the clusters
+        for i in range(len(clusters)):
+
+            # Get group of areas
+            group = clusters[i]
+
+            # Initialize group name 
+            group_name = ''.join(["GROUP_", random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(3)])
+
+            for area in group
+
+                # Add group tag to member area
+                area.groups.append[group_name]
 
     # Loads a room from text file #TODO: eventually this has to be put in a database
     def load_room(filename):

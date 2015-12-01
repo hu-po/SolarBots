@@ -20,7 +20,7 @@ class Servo(object):
         print "Servo " + str(self.servo_num) + " done"
 
     # Sets the angle for a desired servo
-    def setServo(angle):
+    def setServo(self, angle):
 
         # Setup up PWM for servo
         S = GPIO.PWM(self.servo_pin, angle * 10) # This will send a pulse

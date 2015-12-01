@@ -18,15 +18,40 @@ import numpy.linalg as la
 # Moves to exsisting area, returns area object
 def navigate(old_area, new_area):
 
+    # Test output
+    print "Navigating (moving to a known area) ..."
+
     # Beep to indicate begining of navigate step
     buzzer = Buzzer()
     buzzer.play(4)
 
-    # TODO: Travel from old area to an already exsisting area, breaking down
-    # movement into primitives
+    # Make sure a path exsists between the two areas
+    if old_area not in new_area.previous:
+        print "No path between nodes"
+        return
 
-    return area_traveled_to
+    # Get move required to travel between areas
+    move = new_area.moves_performed[old_area.name]
 
+    # TODO: moves_performed will just be the latest move performed between the two areas
+    # Need to find a way to find the "best" move between them
+
+    # Execute motion primitives between nodes
+    for (direction, amount) in move.primitives:
+        print "Moving" + str(direction) + " " + str(amount)
+        # moveBot(direction, amount, params.p['MOTOR_PWR'])
+
+    # Get final position by summing initial position and delta
+    move.final_pos = [init + delt for init, delt in zip(move.initial_pos, move.delta)]
+
+    # TODO: put a kalman filter on the movement. Use camera and sonar as
+    # truth? Not sure here
+
+    # TODO: figure out what area you are in by looking at pictures
+    new_area.localize
+
+    # Add move to new area's dictionary of moves
+    new_area.moves_performed[old_area.name] = move
 
 def explore(old_area=None):  # Move to a new area, returns area object
 
@@ -49,7 +74,7 @@ def explore(old_area=None):  # Move to a new area, returns area object
     move.type = "Real"
 
     # Link it to the previous object
-    new_area.previous = old_area
+    new_area.previous.append(old_area)
 
     # Initial position set to position of previous area
     move.initial_pos = old_area.pos
@@ -71,10 +96,10 @@ def explore(old_area=None):  # Move to a new area, returns area object
     # truth? Not sure here
 
     # Add move to new area's dictionary of moves
-    new_area.moves_performed.append(move)
+    new_area.moves_performed[old_area.name] = move
 
-    # Take pictures and add to dictionary of pictures
-    # new_area.pics = camera.takePics()
+    # Localize bot in new area
+    new_area.localize
 
     # Return current area
     return new_area

@@ -6,10 +6,18 @@
 from brain import params
 from Move import Move
 import numpy as np
+import string
+import random
 
 class Area:
 
     def __init__(self):
+
+        # Initialize name for the area using random string of digits/characters
+        self.name = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6))
+
+        # List of groups associated with the area
+        self.groups = []
 
         # Initialize dictionary of pictures
         self.pics = {}
@@ -20,9 +28,9 @@ class Area:
         # Previous areas (creating a graph)
         self.previous = []
 
-        # Dictionary of moves to get from previous areas (measure of strength
-        # of tie to previous area)
-        self.moves_performed = []
+        # Dictionary of moves to get to this area from an origin area (key)
+        # Length can be used to measure of strength of tie to previous area
+        self.moves_performed = {}
 
     # Finds the distance from a position to a given area
     def distance_to_pos(self, given_pos):
@@ -59,7 +67,7 @@ class Area:
         move.type = "Virtual"
 
         # Link areas together
-        self.previous = area1
+        self.previous.append(area1)
 
         # Set initial and final positions of move
         move.initial_pos = origin_area.pos
@@ -71,5 +79,25 @@ class Area:
         # Fill in other fields in the virutal area
         move.getMotionPlan()
 
-        # Add move to area2's dictionary of moves
-        self.moves_performed.append(move)
+        # Add move to areas dictionary of moves
+        self.moves_performed[origin_area.name] = move
+
+    def localize(self): # Determine what the "best matching" area is for this area
+
+        # Take pictures of the area
+        new_area.pics = camera.takePics()
+
+        # Extract feature vectors from the pictures
+        new_area.feature_vec = camera.extractFeatures(new_area.pics)
+
+        # Search other areas within the Fog Radius for matching features
+
+        # Update family tag for the area based on other area's family tags
+
+        # Determine best fit area
+
+        # If best fit area passes certain threshold criteria
+            # new_area is actually this already known "best fit" area
+
+
+
