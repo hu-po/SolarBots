@@ -49,62 +49,43 @@ def takePics(): # Take an array of pictures using the camera
 
 def extractFeatures(): # Extract a feature vector from a series of images
 
-    # TODO: SIFT features? (Histograms seems a bit savage)
+    # Take pictures
+    pics = takePics()
+
+    # Initialize features list
+    features = []
+
+    for image in pics:
+
+        # Get histogram and corner features for each image
+        features.append((hist(image), ORB(image)))
+        
+
+    # Combine features list to form some kind of feature vector
+        # - Going to need some kind of weighting here
 
     return features
 
+def hist(image): # Returns a feature vector representing the histogram in an image
 
+    return hist
 
+def ORB(image): # Returns a feature vector using the OpenCV ORB feature detector
 
+    img = cv2.imread('simple.jpg',0)
 
+    # Initiate STAR detector
+    orb = cv2.ORB()
 
+    # find the keypoints with ORB
+    kp = orb.detect(img,None)
 
+    # compute the descriptors with ORB
+    kp, des = orb.compute(img, kp)
 
+    # draw only keypoints location,not size and orientation
+    img2 = cv2.drawKeypoints(img,kp,color=(0,255,0), flags=0)
+    plt.imshow(img2),plt.show()
 
+    return feat
 
-
-
-
-
-
-# --------- Code for FAST from online:
-
-# Initiate FAST object with default values
-fast = cv2.FastFeatureDetector()
-
-# find and draw the keypoints
-kp = fast.detect(img, None)
-img2 = cv2.drawKeypoints(img, kp, color=(255, 0, 0))
-
-# Print all default params
-print "Threshold: ", fast.getInt('threshold')
-print "nonmaxSuppression: ", fast.getBool('nonmaxSuppression')
-print "neighborhood: ", fast.getInt('type')
-print "Total Keypoints with nonmaxSuppression: ", len(kp)
-
-cv2.imwrite('fast_true.png', img2)
-
-# Disable nonmaxSuppression
-fast.setBool('nonmaxSuppression', 0)
-kp = fast.detect(img, None)
-
-print "Total Keypoints without nonmaxSuppression: ", len(kp)
-
-img3 = cv2.drawKeypoints(img, kp, color=(255, 0, 0))
-
-cv2.imwrite('fast_false.png', img3)
-
-# --------- Code for ORB from online:
-
-# Initiate STAR detector
-orb = cv2.ORB()
-
-# find the keypoints with ORB
-kp = orb.detect(img, None)
-
-# compute the descriptors with ORB
-kp, des = orb.compute(img, kp)
-
-# draw only keypoints location,not size and orientation
-img2 = cv2.drawKeypoints(img, kp, color=(0, 255, 0), flags=0)
-plt.imshow(img2), plt.show()
