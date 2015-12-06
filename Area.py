@@ -59,7 +59,7 @@ class Area:
         return (distance, diff)
 
     def virutal_move(self, origin_area): # Create a virutal move from an origin area
-    
+
         # Create new move object
         move = Move()
 
@@ -99,5 +99,13 @@ class Area:
         # If best fit area passes certain threshold criteria
             # new_area is actually this already known "best fit" area
 
+    def describe(self):
+        '''
+            Prints out information about the room, such as list of areas, etc
+        '''
 
-
+        print "Area description: "
+        print "     NAME: " + str(self.name)
+        print "   GROUPS: " + str(self.groups)
+        print "      POS: " + str(self.pos)
+        print " PREVIOUS: " + str(self.previous)

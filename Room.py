@@ -6,6 +6,7 @@ import pickle
 import datetime
 from brain import params
 
+
 class Room:
 
     def __init__(self):
@@ -16,19 +17,34 @@ class Room:
         # List of areas in room
         self.areas = []
 
-    def lookup_area(self, area_name): # Find an area with an area name
+        # Current area (where robot is)
+        self.current_area = []
 
-        return area for area in self.areas if area.name = area_name else None
+    def lookup_area(self, area_name):
+        '''
+            Returns area within Room object with given area_name
+        '''
+        for area in self.areas:
+            if area.name == area:
+                return area
 
-    def lookup_group(self, group_name): # Returns areas associated with a certain group
+        # return None if area not found
+        return None
 
-        # Get areas with 
+    def lookup_group(self, group_name):
+        '''
+            Returns list of areas within Room object within a group
+            of given group_name
+        '''
         group = [area for area in self.areas if group_name in area.groups]
 
         return group
 
-    # Finds the areas within defined fog radius of the given area
     def closest_areas(self, area):
+        '''
+            Returns lits of areas within Room object that lie within
+            the fog radius (global parameter) of a given area
+        '''
 
         # Initialize closest areas, and smallest distance so far
         closest = []
@@ -46,9 +62,13 @@ class Room:
         # Return the closest to position
         return closest
 
-    def connect_areas(self): # Connect areas with moves according to fog radius
+    def connect_areas(self):
+        '''
+            Connects (creates moves between) all areas within Room object
+            that lie within the fog radius (global parameter) of a given area
+        '''
 
-        # Loop through all the areas in the room    
+        # Loop through all the areas in the room
         for area in self.areas:
 
             # Get closest areas to each area
@@ -60,7 +80,10 @@ class Room:
                 # Create virutal move between areas
                 area.virtualmove(close_area)
 
-    def cluster(self, n): # Perform knn clustering on areas, returns clustered areas
+    def cluster(self, n):
+        '''
+            Performs knn clustering on areas, placing them in groups
+        '''
 
         # TODO: Cluster using:
         #   - Image feature vectors (Histogram, SIFT?)
@@ -75,27 +98,30 @@ class Room:
             # Get group of areas
             group = clusters[i]
 
-            # Initialize group name 
-            group_name = ''.join(["GROUP_", random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(3)])
+            # Initialize group name
+            group_name = ''.join(["GROUP_", [random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(3)]])
 
-            for area in group
+            for area in group:
 
                 # Add group tag to member area
                 area.groups.append[group_name]
 
-    # Loads a room from text file #TODO: eventually this has to be put in a database
-    def load_room(filename):
 
-        # Load room object from file using pickle
-        f = open(filename)
-        room = pickle.load(''.join([params.p['ROOM_PATH'], filename]))
+    def load_room(self, filename):
+        '''
+            Loads Room object of a given file name file path (global parameter) using pickle
+        '''
+
+        f = open(''.join([params.p['ROOM_PATH'], filename]))
+        self = pickle.load(f)
         f.close()
 
-        # Return room object
-        return room
-
-    # Stores a room_picsm to a text file #TODO: eventually put in database
     def store_room(self):
+        '''
+            Stores Room object to a file path (global parameter) using pickle
+        '''
+
+        print self.areas
 
         # Get date
         date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -104,3 +130,11 @@ class Room:
         f = open(''.join([params.p['ROOM_PATH'], 'room', date, '.pckl']), 'w')
         pickle.dump(self, f)
         f.close()
+
+    def describe(self):
+        '''
+            Prints out information about the room, such as list of areas, etc
+        '''
+
+        print "Room has " + str(len(self.areas)) + " areas: "
+        print self.areas

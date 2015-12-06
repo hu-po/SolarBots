@@ -18,7 +18,7 @@ params = Parameters()
 
 # Add Navigation Parameters (name, value, description)
 params.addParam('DATA_SAMPLE_SIZE', 3, 'Sample size for data (increase to stabilize at cost of speed)')
-params.addParam('MAX_ITER', 10, 'Maximum number of Sense-Plan-Act Cycles')
+params.addParam('MAX_ITER', 2, 'Maximum number of Sense-Plan-Act Cycles')
 params.addParam('MOVE_PER_TURN', 1, 'How far you want the robot to move each step (increments of 10cm)')
 params.addParam('TIMEOUT', 0.1, 'How many seconds until sensor loop times out and returns a bunch of zeros')
 params.addParam('FORWARD_VECTOR', [0, 1, 0], 'Describes the forward (Theta = 0) direction in the robot frame')
@@ -34,7 +34,7 @@ params.addParam('RAND_NUM', 10, 'Number of random samples')
 params.addParam('OBSERVATION_NOISE', 0.1, 'Kalman Filter observation noise')
 
 # Add Tuning Parameters
-params.addParam('DISTANCE_WEIGHT', [1, 1, 0.2],
+params.addParam('DISTANCE_WEIGHT', [0.1, 0.1, 0.2],
                 'Weighting of [X, Y, Theta] each when determining distance metric')
 params.addParam('FOG_RADIUS', 100,
                 'Distance metric to use (centered around current position) for looking for close nodes')
@@ -65,29 +65,32 @@ sensors.addSensor('HC-SR04', 3, 10, [7.36,  -4.25,  0,    -math.pi / 6])
 sensors.addSensor('HC-SR04', 4, 10, [0,   -8.5,  0,    -math.pi / 2])
 sensors.addSensor('HC-SR04', 5, 10, [-7.36,  -4.25,  0, -5 * (math.pi / 6)])
 sensors.addSensor('HC-SR04', 6, 10, [-7.36,   4.25,  0,  5 * (math.pi / 6)])
-sensors.addSensor('TSL2561', 1, 5, [0,    8.5,  0, 0,     math.pi / 6])
-sensors.addSensor('TSL2561', 2, 5, [0,    8.5,  0, 0,    -math.pi / 2])
-sensors.addSensor('TSL2561', 3, 5, [0,    8.5,  0, 0,  5 * (math.pi / 6)])
+sensors.addSensor('TSL2561', 1, 5, [7.36,   4.25,  0,     math.pi / 6])
+sensors.addSensor('TSL2561', 2, 5, [0,   -8.5,  0,    -math.pi / 2])
+sensors.addSensor('TSL2561', 3, 5, [-7.36,   4.25,  0,  5 * (math.pi / 6)])
 
 # Create PinMaster object
 pins = PinMaster()
 
 # Add pins to pin dictionary
-pins.addPin('MOTOR1A', 18)
-pins.addPin('MOTOR1B', 23)  # Right Motor
-pins.addPin('MOTOR1E', 24)
-pins.addPin('MOTOR2A', 17)  # Left Motor
-pins.addPin('MOTOR2B', 27)
-pins.addPin('MOTOR2E', 22)
-pins.addPin('SERVO1',  5)  # Horizontal (Side to Side) servo
+pins.addPin('MOTOR1A', 18) # 16)
+pins.addPin('MOTOR1B', 23) # 20)  # Right Motor
+pins.addPin('MOTOR1E', 24) # 21)
+pins.addPin('MOTOR2A', 17) # 13)  # Left Motor
+pins.addPin('MOTOR2B', 27) # 19)
+pins.addPin('MOTOR2E', 22) # 26)
+pins.addPin('SERVO1', 5)  # Horizontal (Side to Side) servo
 pins.addPin('SERVO2', 13)  # Vertical (Up and Down) servo
-pins.addPin('BUZZER', 4)   # Piezo buzzer
+pins.addPin('BUZZER', 4) #25)  # Piezo buzzer
 
 # # Create Map object
 # mapa = Mapa()
 
 
 def main():
+    '''
+        Runs main robot Sense-Plan-Act loop
+    '''
 
     print "Importing functions ..."
 
@@ -105,6 +108,7 @@ def main():
     # pull_map()
 
     room = Room()
+
     if len(sys.argv) > 1:
         print "Loading up Room: " + str(sys.argv[1])
         room.load_room()
@@ -116,10 +120,7 @@ def main():
     for i in range(0, params.p['MAX_ITER']):
 
         # Explore (Move to a new area)
-        new_area = navigation.explore()
-
-        # Add area to room object
-        room.areas.append(new_area)
+        room = navigation.explore(room)
 
     print "Exited main exploration loop ..."
 

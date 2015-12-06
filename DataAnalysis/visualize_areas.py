@@ -3,14 +3,15 @@
 # Description: Visualizes areas and moves
 
 import sys
-sys.path.insert(0,'..')
+import os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import numpy as np
+
+# import numpy as np
 import matplotlib.pyplot as plt
 from Room import Room
-from Sensor import Sensor
+# from Sensor import Sensor
 from brain import params, sensors
-
 
 # Colors/Size of the datapoints in the plot
 PLOT_COLOR_HCSR04 = 'r'  # Red
@@ -22,7 +23,9 @@ PLOT_SIZE_TSL2561 = 60
 PLOT_COLOR_AREA = 'g'  # Green
 PLOT_SIZE_AREA = 200
 
-def plot_moves(move, axes): # Plots the moves to an area as vectors in 2D space
+
+# Plots the moves to an area as vectors in 2D space
+def plot_moves(move, axes):
 
     # Initial position of move
     pos_i = move.initial_pos
@@ -30,8 +33,14 @@ def plot_moves(move, axes): # Plots the moves to an area as vectors in 2D space
     # Final position of move
     pos_f = move.final_pos
 
+    print "Entered plot_moves"
+    print "Move started at: " + str(pos_i[0]) + " " + str(pos_i[1])
+    print "Move ended at: " + str(pos_f[0]) + " " + str(pos_f[1])
+
+
     # Plot arrow showing move
-    axes.arrow(pos_i[0], pos_i[1], (pos_f[0] - pos_i[0]), (pos_f[1] - pos_i[1]), width=1.0)
+    axes.arrow(pos_i[0], pos_i[1], (pos_f[0] - pos_i[0]),
+               (pos_f[1] - pos_i[1]), width=1.0)
 
     # Plot sensor scan data (loop through all the sensors)
     for i in range(len(sensors.sensor_names)):
@@ -41,6 +50,10 @@ def plot_moves(move, axes): # Plots the moves to an area as vectors in 2D space
 
         # Get datapoint from move object
         data_point = move.global_pos_vectors[i]
+
+        # Test prints
+        print "data_point: "
+        print data_point
 
         # Determine color based on sensor type
         if sensor == 'HCSR04':
@@ -53,16 +66,21 @@ def plot_moves(move, axes): # Plots the moves to an area as vectors in 2D space
         axes.scatter(data_point[0], data_point[1], s=size, c=color, alpha=0.7)
 
 
-def plot_area(area, axes): # Plots an area as a red circle in space
+def plot_area(area, axes):  # Plots an area as a red circle in space
+
+    print "Entered plot_area"
+    area.describe()
 
     # Plot the area to axes handle
-    axes.scatter(area.pos[0], area.pos[1], s=PLOT_SIZE_AREA, c=PLOT_COLOR_AREA, alpha=0.2)
+    axes.scatter(
+        area.pos[0], area.pos[1], s=PLOT_SIZE_AREA, c=PLOT_COLOR_AREA, alpha=0.2)
 
     # Plot moves from previous area to this area
     for move in area.moves_performed:
         plot_moves(prev_move, axes)
 
-    # Determine vectors for axes of area, transforming using theta (area.pos[3])
+    # Determine vectors for axes of area, transforming using theta
+    # (area.pos[3])
     x_axis = [cos(area.pos[3]), sin(area.pos[3])]
     y_axis = [-sin(area.pos[3]), cos(area.pos[3])]
 
@@ -70,20 +88,28 @@ def plot_area(area, axes): # Plots an area as a red circle in space
     axes.arrow(area.pos[0], area.pos[1], x_axis[0], x_axis[1], width=0.5)
     axes.arrow(area.pos[0], area.pos[1], y_axis[0], y_axis[1], width=0.5)
 
+
 def main():
 
     # Initialize room object
     room = Room()
 
+    # Filename for room
+    filename = 'room2015-12-06.pckl'
+
     # Read in room object from text file
-    room.read_from_text('room2015-11-30.pckl')
+    room.load_room(filename)
+
+    # Print out info
+    print "Loading Room from: " + filename
+    room.describe()
 
     # Initialize Figure
     fig, ax = plt.subplots()
 
     # Define plot parameters
-    plt.xlim(-5, 5)
-    plt.ylim(-5, 5)
+    # plt.xlim(-5, 5)
+    # plt.ylim(-5, 5)
     plt.xlabel('X')
     plt.xlabel('Y')
 

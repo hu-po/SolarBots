@@ -16,7 +16,11 @@ import numpy as np
 import numpy.linalg as la
 
 # Moves to exsisting area, returns area object
-def navigate(old_area, new_area):
+def navigate(room, new_area):
+
+    # initialize room.current_area if it does not exsist
+    if not room.current_area:
+        room.current_area = Area()
 
     # Test output
     print "Navigating (moving to a known area) ..."
@@ -26,12 +30,12 @@ def navigate(old_area, new_area):
     buzzer.play(4)
 
     # Make sure a path exsists between the two areas
-    if old_area not in new_area.previous:
+    if room.current_area not in new_area.previous:
         print "No path between nodes"
         return
 
     # Get move required to travel between areas
-    move = new_area.moves_performed[old_area.name]
+    move = new_area.moves_performed[room.current_area.name]
 
     # TODO: moves_performed will just be the latest move performed between the two areas
     # Need to find a way to find the "best" move between them
@@ -51,13 +55,13 @@ def navigate(old_area, new_area):
     new_area.localize
 
     # Add move to new area's dictionary of moves
-    new_area.moves_performed[old_area.name] = move
+    new_area.moves_performed[room.current_area.name] = move
 
-def explore(old_area=None):  # Move to a new area, returns area object
+def explore(room):  # Move to a new area, returns area object
 
-    # Set old_area to None if this is first pass
-    if not old_area:
-        old_area = Area()
+    # initialize room.current_area if it does not exsist
+    if not room.current_area:
+        room.current_area = Area()
 
     # Test output
     print "Exploring (moving to a new location) ..."
@@ -74,10 +78,10 @@ def explore(old_area=None):  # Move to a new area, returns area object
     move.type = "Real"
 
     # Link it to the previous object
-    new_area.previous.append(old_area)
+    new_area.previous.append(room.current_area.name)
 
     # Initial position set to position of previous area
-    move.initial_pos = old_area.pos
+    move.initial_pos = room.current_area.pos
 
     # Vector of movement used
     move = get_move_vector(move)
@@ -86,7 +90,7 @@ def explore(old_area=None):  # Move to a new area, returns area object
     move.getMotionPlan()
 
     for (direction, amount) in move.primitives:
-        print "Moving" + str(direction) + " " + str(amount)
+        print "Moving " + str(direction) + " " + str(amount)
         # moveBot(direction, amount, params.p['MOTOR_PWR'])
 
     # Get final position by summing initial position and delta
@@ -95,19 +99,36 @@ def explore(old_area=None):  # Move to a new area, returns area object
     # TODO: put a kalman filter on the movement. Use camera and sonar as
     # truth? Not sure here
 
+    # # Test print
+    # print "Describing move in explore function"
+    move.describe()
+
+    # Update location of new area to final position of move
+    new_area.pos = move.final_pos
+
     # Add move to new area's dictionary of moves
-    new_area.moves_performed[old_area.name] = move
+    new_area.moves_performed[room.current_area.name] = move
+
+    # Redirect current area to this new_area
+    room.current_area = new_area
 
     # Localize bot in new area
-    new_area.localize
+    # new_area.localize
 
-    # Return current area
-    return new_area
+    # # Test print
+    # print "Describing new_area in explore function"
+    # new_area.describe()
 
+    # Append new_area to room
+    room.areas.append(new_area)
 
-def sample():  # Sample the Arduino sensors
-    print "inside sample()"
+    # Return updated room object
+    return room
 
+def sample():
+    '''
+        Sample Arduino sensors and return datapoints
+    '''
     # Set timeout time (2 seconds)
     timeout = time.time() + params.p['TIMEOUT']
 
@@ -173,7 +194,7 @@ def get_move_vector(move):
                         for i in range(len(sensors.sensor_names))]
 
     # Determine position vectors for sensor data (with respect to global frame)
-    move.pos_vectors = [sensors.to_global(sensors.sensor_names[i], move.smooth_data[i], move.initial_pos)
+    move.global_pos_vectors = [sensors.to_global(sensors.sensor_names[i], move.smooth_data[i], move.initial_pos)
                         for i in range(len(sensors.sensor_names))]
 
     # Combine readings together using sensor weights
@@ -189,20 +210,6 @@ def get_move_vector(move):
     # Combine weighted position vectors to get ultimate direction vector
     move.direction_vector = np.mean(
         np.array(move.weighted_pos_vectors), axis=0)
-
-    # Testing prints
-    # print "raw_data inside get_move_vector:"
-    # print move.raw_data
-    # print "smooth_data inside get_move_vector:"
-    # print move.smooth_data
-    # print "pos_vectors inside get_move_vector:"
-    # print move.pos_vectors
-    # print "global_pos_vectors inside get_move_vector:"
-    # print move.global_pos_vectors
-    # print "weighted_pos_vectors inside get_move_vector:"
-    # print move.weighted_pos_vectors
-    # print "direction_vector inside get_move_vector:"
-    # print move.direction_vector
 
     # Return move object
     return move

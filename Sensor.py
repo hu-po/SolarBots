@@ -80,7 +80,7 @@ class Sensor:
         T_robot = self.s[key][2] # Transform is 3rd element in dictionary entry
 
         # Transform sensor reading to global frame
-        new_read = np.dot(T_global, np.dot(T_robot, np.array([reading, 0, 0, 1]).reshape((3, 1))))
+        new_read = np.dot(T_global, np.dot(T_robot, np.array([reading, 0, 0, 1]).reshape((4, 1))))
 
         # Remove extra digit from end
         new_read = new_read[:-1]
