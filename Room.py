@@ -2,7 +2,7 @@
 # Description: Room class defines room objects, which contain dictonaries
 # of pictures and lists of areas for that room
 
-import pickle
+import cPickle
 import datetime
 from brain import params
 
@@ -80,6 +80,30 @@ class Room:
                 # Create virutal move between areas
                 area.virtualmove(close_area)
 
+    def localize(self):
+        '''
+            Function will return the "Best Matching Area" within the fog radius (global parameter)
+            of the given area. Distance is calculated through 
+        '''
+
+        # Take pictures of the area
+        new_area.pics = camera.takePics()
+
+        # Extract feature vectors from the pictures
+        new_area.feature_vec = camera.extractFeatures(new_area.pics)
+
+        # Search other areas within the Fog Radius for matching features
+        ORBFeatures.distance()
+        RGBHistogram.distance()
+        
+        # Update family tag for the area based on other area's family tags
+
+        # Determine best fit area
+
+        # If best fit area passes certain threshold criteria
+            # new_area is actually this already known "best fit" area
+
+
     def cluster(self, n):
         '''
             Performs knn clustering on areas, placing them in groups
@@ -112,8 +136,8 @@ class Room:
             Loads Room object of a given file name file path (global parameter) using pickle
         '''
 
-        f = open(''.join([params.p['ROOM_PATH'], filename]))
-        self = pickle.load(f)
+        f = open(''.join([params.p['ROOM_PATH'], filename]), 'rb')
+        self = cPickle.load(f)
         f.close()
 
     def store_room(self):
@@ -128,8 +152,9 @@ class Room:
 
         # Store room object in file using pickle
         f = open(''.join([params.p['ROOM_PATH'], 'room', date, '.pckl']), 'w')
-        pickle.dump(self, f)
+        f.write(cPickle.dumps(self))
         f.close()
+
 
     def describe(self):
         '''

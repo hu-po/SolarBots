@@ -8,6 +8,8 @@ import picamera
 import cv2
 import Servo
 from brain import params
+import RGBHistogram
+import ORBFeatures
 
 # Initialize camera
 camera = picamera.PiCamera()
@@ -57,35 +59,38 @@ def extractFeatures(): # Extract a feature vector from a series of images
 
     for image in pics:
 
+        # Initialize image histogram object and get feature vector
+        hist = RGBHistogram([8, 8, 8])
+        hist_features = hist.descriptor(image)
+
+        # Initialize ORB features object and get feature vector
+        orb = ORBFeatures()
+        orb_features = orb.descriptor(image)
+
         # Get histogram and corner features for each image
-        features.append((hist(image), ORB(image)))
-        
+        features.append((hist_features, orb_features))
 
     # Combine features list to form some kind of feature vector
         # - Going to need some kind of weighting here
 
     return features
 
-def hist(image): # Returns a feature vector representing the histogram in an image
+# def ORB(image): # Returns a feature vector using the OpenCV ORB feature detector
 
-    return hist
+#     img = cv2.imread('simple.jpg',0)
 
-def ORB(image): # Returns a feature vector using the OpenCV ORB feature detector
+#     # Initiate STAR detector
+#     orb = cv2.ORB()
 
-    img = cv2.imread('simple.jpg',0)
+#     # find the keypoints with ORB
+#     kp = orb.detect(img,None)
 
-    # Initiate STAR detector
-    orb = cv2.ORB()
+#     # compute the descriptors with ORB
+#     kp, des = orb.compute(img, kp)
 
-    # find the keypoints with ORB
-    kp = orb.detect(img,None)
+#     # draw only keypoints location,not size and orientation
+#     img2 = cv2.drawKeypoints(img,kp,color=(0,255,0), flags=0)
+#     plt.imshow(img2),plt.show()
 
-    # compute the descriptors with ORB
-    kp, des = orb.compute(img, kp)
-
-    # draw only keypoints location,not size and orientation
-    img2 = cv2.drawKeypoints(img,kp,color=(0,255,0), flags=0)
-    plt.imshow(img2),plt.show()
-
-    return feat
+#     return feat
 

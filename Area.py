@@ -8,6 +8,8 @@ from Move import Move
 import numpy as np
 import string
 import random
+import RGBHistogram
+import ORBFeatures
 
 class Area:
 
@@ -81,23 +83,6 @@ class Area:
 
         # Add move to areas dictionary of moves
         self.moves_performed[origin_area.name] = move
-
-    def localize(self): # Determine what the "best matching" area is for this area
-
-        # Take pictures of the area
-        new_area.pics = camera.takePics()
-
-        # Extract feature vectors from the pictures
-        new_area.feature_vec = camera.extractFeatures(new_area.pics)
-
-        # Search other areas within the Fog Radius for matching features
-
-        # Update family tag for the area based on other area's family tags
-
-        # Determine best fit area
-
-        # If best fit area passes certain threshold criteria
-            # new_area is actually this already known "best fit" area
 
     def describe(self):
         '''
