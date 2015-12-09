@@ -82,7 +82,7 @@ class Room:
 
     def localize(self):
         '''
-            Function will return the "Best Matching Area" within the fog radius (global parameter)
+            Function will return the "Best Matching Area" within a fog radius (global parameter)
             of the given area. Distance is calculated through 
         '''
 

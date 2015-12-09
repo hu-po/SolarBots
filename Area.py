@@ -34,8 +34,10 @@ class Area:
         # Length can be used to measure of strength of tie to previous area
         self.moves_performed = {}
 
-    # Finds the distance from a position to a given area
     def distance_to_pos(self, given_pos):
+        '''
+            Returns distance from a given area to a given position
+        '''
 
         # Exact Distance from given_pos to this pos
         diff = np.subtract(np.array(self.pos), np.array(given_pos))
@@ -47,8 +49,10 @@ class Area:
         # returns tuple containing exact value, and just the distance number
         return (distance, diff)
 
-    # Finds the distance from an area to another area
     def distance_to_area(self, given_area):
+        '''
+            Returns distance between two given areas
+        '''
 
         # Exact Distance from given_pos to this pos
         diff = np.subtract(np.array(self.pos), np.array(given_area.pos))
@@ -60,7 +64,10 @@ class Area:
         # returns tuple containing exact value, and just the distance number
         return (distance, diff)
 
-    def virutal_move(self, origin_area): # Create a virutal move from an origin area
+    def virutal_move(self, origin_area):
+        '''
+            Creates a virtual move from given origin area to a given target area
+        '''
 
         # Create new move object
         move = Move()

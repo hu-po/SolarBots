@@ -15,7 +15,10 @@ import ORBFeatures
 camera = picamera.PiCamera()
 rawCapture = PiRGBArray(camera)
 
-def takePics(): # Take an array of pictures using the camera
+def takePics():
+    '''
+        Returns a list of pictures taken at positions specified in teh global parameter CAMERA_SERVOS
+    '''
 
     # Create servo objects
     servo1 = Servo(1)
@@ -25,31 +28,18 @@ def takePics(): # Take an array of pictures using the camera
     pics = []
 
     # Take 5 pictures, moving camera between
-    for i in range(ser):
-        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
-        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
+    for i in range(params.p['CAMERA_SERVOS']):
+        servo1.setServo(params.p['CAMERA_SERVOS'][i][0])
+        servo2.setServo(params.p['CAMERA_SERVOS'][i][1])
         pics.append(camera.capture(rawCapture, format="rgb"))
-
-        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
-        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
-        camera.capture(rawCapture, format="rgb")
-
-        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
-        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
-        camera.capture(rawCapture, format="rgb")
-
-        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
-        servo2.setServo(params.p['CAMERA_SERVOS'][0][1])
-        camera.capture(rawCapture, format="rgb")
-
-        servo1.setServo(params.p['CAMERA_SERVOS'][0][0])
-        servo2.setServo(params.p['CAMERA_SERVOS'][0][0])
-        camera.capture(rawCapture, format="rgb")
 
     # Return array of images
     return pics
 
-def extractFeatures(): # Extract a feature vector from a series of images
+def extractFeatures():
+    '''
+        Extracts a list of feature vectors from a list of images
+    '''
 
     # Take pictures
     pics = takePics()
