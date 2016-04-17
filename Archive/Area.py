@@ -8,8 +8,8 @@ from Move import Move
 import numpy as np
 import string
 import random
-import RGBHistogram
-import ORBFeatures
+#import RGBHistogram
+#import ORBFeatures
 
 class Area:
 

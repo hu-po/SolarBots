@@ -23,9 +23,24 @@ params.addParam('MOVE_PER_TURN', 1, 'How far you want the robot to move each ste
 params.addParam('TIMEOUT', 0.1, 'How many seconds until sensor loop times out and returns a bunch of zeros')
 params.addParam('FORWARD_VECTOR', [0, 1, 0], 'Describes the forward (Theta = 0) direction in the robot frame')
 
+# Add SLAM Parameters (name, value, description)
+params.addParam('RAND_DIST_MU', 0, 'Center of distribution (cm)')
+params.addParam('RAND_DIST_SIGMA', 1, 'Standard deviation (cm)')
+params.addParam('RAND_ANG_MU', 0, 'Degrees')
+params.addParam('RAND_ANG_SIGMA', 10, 'Degrees')
+params.addParam('RAND_NUM', 10, 'Number of random samples')
+
+# Add Kalman Filter Parameters
+params.addParam('OBSERVATION_NOISE', 0.1, 'Kalman Filter observation noise')
+
 # Add Tuning Parameters
 params.addParam('DISTANCE_WEIGHT', [0.1, 0.1, 0.2],
                 'Weighting of [X, Y, Theta] each when determining distance metric')
+params.addParam('FOG_RADIUS', 100,
+                'Distance metric to use (centered around current position) for looking for close nodes')
+
+# Add file path parameters
+params.addParam('ROOM_PATH', 'Data/Rooms/', 'Path to saved room objects')
 
 # Add Motor Parameters
 params.addParam('SEC_PER_TURN', 10, 'Seconds required to complete one full turn')
@@ -34,6 +49,11 @@ params.addParam('MOTOR_DEFAULT_PWR', 50, 'Default starting power for the motor')
 params.addParam('MOTOR_OFFSET_PWR', -1, 'Difference between Motor 1 and Motor 2')
 params.addParam('MOTOR_PWM_FREQ', 357, 'Frequency of PWM for motors')
 params.addParam('MOTOR_PWR', 50, '0 - 100 speed of motor')
+
+# Add Camera Parameters
+params.addParam('CAMERA_SERVOS',
+                [[0, 0], [70, 0], [110, 0], [0, 70], [0, 110]],
+                'Position of servos for pictures, Note: Size determines number of pictures')
 
 # Create Sensor object
 sensors = Sensor()
@@ -59,7 +79,12 @@ pins.addPin('MOTOR1E', 24) # 21)
 pins.addPin('MOTOR2A', 17) # 13)  # Left Motor
 pins.addPin('MOTOR2B', 27) # 19)
 pins.addPin('MOTOR2E', 22) # 26)
+pins.addPin('SERVO1', 5)  # Horizontal (Side to Side) servo
+pins.addPin('SERVO2', 13)  # Vertical (Up and Down) servo
 pins.addPin('BUZZER', 4) #25)  # Piezo buzzer
+
+# # Create Map object
+# mapa = Mapa()
 
 
 def main():
@@ -69,17 +94,69 @@ def main():
 
     print "Importing functions ..."
 
+    # from python_mysql_connect import connect, insert_current_pos, query_current_pos
     from motor import GPIOclean
+    from Room import Room
     import navigation
+    # from maptool import pull_map
+    # from slam import slamfunc
 
-    print "Starting navigation phase ..."
+    # print "Connecting to database ..."
+    # connect()
 
-    navigation.navigate()
+    # print "Downloading map from database ..."
+    # pull_map()
 
-    print "Exited navigation phase ..."
+    room = Room()
+
+    if len(sys.argv) > 1:
+        print "Loading up Room: " + str(sys.argv[1])
+        room.load_room()
+    else:
+        print "No Room specified, using empty Room ..."
+
+    print "Starting main exploration loop ..."
+
+    for i in range(0, params.p['MAX_ITER']):
+
+        # Explore (Move to a new area)
+        room = navigation.explore(room)
+
+    print "Exited main exploration loop ..."
+
+    print "Storing room to file..."
+    room.store_room()
+
+    # print "Pushing map to database ..."
+    # push_map()
 
     print "Clean up motor GPIO ..."
     GPIOclean()
 
+
 if __name__ == '__main__':
     main()
+
+# --------------------- OLD CODE
+
+        # Get current robot pose from database
+        # curr_pos = query_current_pos()
+
+        # Move robot to new position based on current position and sensor input
+        # curr_input = navigate(curr_pos)
+
+        # Use current position and explore dataset to determine new location
+        # curr_pos_slam = slamfunc(scan, curr_pos)
+
+        # Feed SLAM estimate of position into Kalman Filter
+        # curr_pos_filter = kalman(curr_pos, curr_pos_slam, curr_input)
+
+        # curr_pos_filter = kalman(curr_pos, curr_pos, curr_input)
+
+        # print curr_pos # Last known filtered state of robot
+        # print curr_meas # Current approximate state of robot
+        # print curr_input # Input vector which was inputed since last known state
+        # print curr_pos_filter # New filtered state of robot
+
+        # Push new robot pose to database
+        # insert_current_pos(curr_pos_filter)

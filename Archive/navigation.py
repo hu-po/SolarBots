@@ -1,49 +1,67 @@
 # Author: Hugo P.
 # Project: https://github.com/HugoCMU/SolarTree
-# Description: Program uses the sensors to determine best sequence of moves for robot to execute.
+# Description: Program takes in current position, and uses the map to
+# determine best sequence of moves for robot to execute.
 
 from brain import ser, params, sensors
 from motor import moveBot
+from Move import Move
+from Area import Area
 from Buzzer import Buzzer
 import time
+# import camera
+# from kalmanfilter import kalman
 
 import numpy as np
 import numpy.linalg as la
 
-def navigate():
-    '''
-        Function will call exploration() function to move robot, but will keep
-        track of previous moves
-    '''
+# Moves to exsisting area, returns area object
+def navigate(room, new_area):
+
+    # initialize room.current_area if it does not exsist
+    if not room.current_area:
+        room.current_area = Area()
 
     # Test output
-    print "Navigating ..."
+    print "Navigating (moving to a known area) ..."
 
     # Beep to indicate begining of navigate step
     buzzer = Buzzer()
     buzzer.play(4)
 
-    # Initialize list for history of moves
-    move_hist = []
+    # Make sure a path exsists between the two areas
+    if room.current_area not in new_area.previous:
+        print "No path between nodes"
+        return
 
-    # Enter the exploration loop
-    for range(params.p['MAX_ITER']):
+    # Get move required to travel between areas
+    move = new_area.moves_performed[room.current_area.name]
 
-        # Execute explore function and save results
-        move_hist.append(explore(move_hist[-1]))
+    # TODO: moves_performed will just be the latest move performed between the two areas
+    # Need to find a way to find the "best" move between them
 
-def explore(old_move):
-    '''
-        Function will initialize and execute a new "move"
-        In: previous move
-        Out: new move
-    '''
+    # Execute motion primitives between nodes
+    for (direction, amount) in move.primitives:
+        print "Moving" + str(direction) + " " + str(amount)
+        # moveBot(direction, amount, params.p['MOTOR_PWR'])
 
-    # Make sure that old_move is not a blank object
-    if old_move is None:
+    # Get final position by summing initial position and delta
+    move.final_pos = [init + delt for init, delt in zip(move.initial_pos, move.delta)]
 
-        # Initialize old move as "blank" move
-        old_move = Move()
+    # TODO: put a kalman filter on the movement. Use camera and sonar as
+    # truth? Not sure here
+
+    # TODO: figure out what area you are in by looking at pictures
+    new_area.localize
+
+    # Add move to new area's dictionary of moves
+    new_area.moves_performed[room.current_area.name] = move
+
+def explore(room):  # Move to a new area, returns area object
+
+    # initialize room.current_area if it does not exsist
+    if not room.current_area:
+        room.current_area = Area()
 
     # Test output
     print "Exploring (moving to a new location) ..."
@@ -52,14 +70,18 @@ def explore(old_move):
     buzzer = Buzzer()
     buzzer.play(5)
 
-    # Initialize new move object
+    # Create new area and move objects
+    new_area = Area()
     move = Move()
 
     # Make sure move is set as a real move (performed by robot)
     move.type = "Real"
 
+    # Link it to the previous object
+    new_area.previous.append(room.current_area.name)
+
     # Initial position set to position of previous area
-    move.initial_pos = old_move.final_pos
+    move.initial_pos = room.current_area.pos
 
     # Vector of movement used
     move = get_move_vector(move)
@@ -74,11 +96,34 @@ def explore(old_move):
     # Get final position by summing initial position and delta
     move.final_pos = [init + delt for init, delt in zip(move.initial_pos, move.delta)]
 
-    # Debug print move fields
+    # TODO: put a kalman filter on the movement. Use camera and sonar as
+    # truth? Not sure here
+
+    # # Test print
+    # print "Describing move in explore function"
     move.describe()
 
-    # Return finished move object
-    return move
+    # Update location of new area to final position of move
+    new_area.pos = move.final_pos
+
+    # Add move to new area's dictionary of moves
+    new_area.moves_performed[room.current_area.name] = move
+
+    # Redirect current area to this new_area
+    room.current_area = new_area
+
+    # Localize bot in new area
+    # new_area.localize
+
+    # # Test print
+    # print "Describing new_area in explore function"
+    # new_area.describe()
+
+    # Append new_area to room
+    room.areas.append(new_area)
+
+    # Return updated room object
+    return room
 
 def sample():
     '''
@@ -139,18 +184,15 @@ def smoothData(data):
     return data_smooth
 
 
-
-def get_move_vector():
-    '''
-        Performs movement based on gradient direction of sensor readings.
-        Returns vector direction of movement
-    '''
+# Performs movement based on gradient direction of sensor readings.
+# Returns vector direction of movement
+def get_move_vector(move):
 
     # Read in raw data from sensors
     move.raw_data = readData()
 
     # Smooth raw data from sensors
-    move.smooth_data = smoothData(raw_data)
+    move.smooth_data = smoothData(move.raw_data)
 
     # Determine position vectors for sensor data (with respect to robot frame)
     move.pos_vectors = [sensors.to_robot(sensors.sensor_names[i], move.smooth_data[i])
@@ -176,6 +218,7 @@ def get_move_vector():
 
     # Return move object
     return move
+
 
 def main():
     explore(None)
