@@ -38,7 +38,7 @@ E2 = GPIO.PWM(pins.p['MOTOR2E'], params.p['MOTOR_PWM_FREQ'])
 #     return
 
 
-def moveBot(direction, distance=10, num=params.p['MOTOR_DEFAULT_PWR'], continuous_mode=False):
+def moveBot(direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous_mode=False):
 
     # Start both sowftware PWMs
     E1.start(num)
@@ -48,7 +48,8 @@ def moveBot(direction, distance=10, num=params.p['MOTOR_DEFAULT_PWR'], continuou
     # GPIO.output(Motor1E, GPIO.HIGH)
     # GPIO.output(Motor2E, GPIO.HIGH)
 
-    print continuous_mode
+    # # Debug print
+    # print continuous_mode
 
     if direction == 'forward':
         print "Going forwards ..."
@@ -60,7 +61,7 @@ def moveBot(direction, distance=10, num=params.p['MOTOR_DEFAULT_PWR'], continuou
         GPIO.output(pins.p['MOTOR2B'], GPIO.LOW)
 
         if not continuous_mode:
-            sleep(distance * params.p['SEC_PER_MOVE'])
+            sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])
 
     elif direction == 'backward':
         print "Going backwards ..."
@@ -72,9 +73,9 @@ def moveBot(direction, distance=10, num=params.p['MOTOR_DEFAULT_PWR'], continuou
         GPIO.output(pins.p['MOTOR2B'], GPIO.HIGH)
 
         if not continuous_mode:
-            sleep(distance * params.p['SEC_PER_MOVE'])
+            sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])
 
-    elif direction == 'turnleft':
+    elif direction == 'left':
         print "Turning Left ..."
 
         GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)
@@ -84,9 +85,9 @@ def moveBot(direction, distance=10, num=params.p['MOTOR_DEFAULT_PWR'], continuou
         GPIO.output(pins.p['MOTOR2B'], GPIO.HIGH)
 
         if not continuous_mode:
-            sleep((distance / 360.0) * params.p['SEC_PER_TURN'])
+            sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])
 
-    elif direction == 'turnright':
+    elif direction == 'right':
         print "Turning Right ..."
 
         GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)
@@ -96,7 +97,7 @@ def moveBot(direction, distance=10, num=params.p['MOTOR_DEFAULT_PWR'], continuou
         GPIO.output(pins.p['MOTOR2B'], GPIO.LOW)
 
         if not continuous_mode:
-            sleep((distance / 360.0) * params.p['SEC_PER_TURN'])
+            sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])
 
     else:
         print "ERROR: Wrong direction input"
@@ -129,7 +130,7 @@ def main():
 
     sleep(1)
 
-    moveBot('turnleft', 90, params.p['MOTOR_DEFAULT_PWR'])  # Make a 90 degree turn
+    moveBot('left', 90, params.p['MOTOR_DEFAULT_PWR'])  # Make a 90 degree turn
 
     sleep(1)
 
@@ -137,7 +138,7 @@ def main():
 
     sleep(1)
 
-    moveBot('turnright', 90, params.p['MOTOR_DEFAULT_PWR'])
+    moveBot('right', 90, params.p['MOTOR_DEFAULT_PWR'])
 
     GPIOclean()
 

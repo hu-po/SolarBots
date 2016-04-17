@@ -1,18 +1,15 @@
 # Author: Hugo P.
 # Project: https://github.com/HugoCMU/SolarTree
-# Description: Sensor class defines sensor objects, with location, type, etc
+# Description: Sensor class defines sensor objects, with location, type,
+#               as well as frame transformation functions etc
 
 import numpy as np
 from numpy import cos, sin
 
-# TODO: Make an inherited class from Sensor called Reading, which stores
-# information for a sensor reading
-
-# Calculate the transformation to a frame
-
-
 def calculateTransform(loc):
-
+    '''
+        Calculates the 4x4 transform to a frame
+    '''
     # Transformation for 3D Rotation along Z-Axis by Theta
     rotation = [[cos(loc[3]), -sin(loc[3]),  0,  0],
                 [sin(loc[3]),  cos(loc[3]),  0,  0],
@@ -66,24 +63,6 @@ class Sensor:
 
         # Remove extra digit from end
         new_read = new_read.tolist()[:-1]
-
-        # Return new reading (as a list)
-        return new_read
-
-    # Transform sensor reading to global frame, requires position of robot in global frame
-    def to_global(self, key, reading, pos):
-
-        # Get global transformation matrix
-        T_global = calculateTransform(pos)
-
-        # Get robot frame transformation matrix using key (name, num) to get right sensor
-        T_robot = self.s[key][2] # Transform is 3rd element in dictionary entry
-
-        # Transform sensor reading to global frame
-        new_read = np.dot(T_global, np.dot(T_robot, np.array([reading, 0, 0, 1]).reshape((4, 1))))
-
-        # Remove extra digit from end
-        new_read = new_read[:-1]
 
         # Return new reading (as a list)
         return new_read

@@ -6,8 +6,6 @@
 import numpy as np
 import numpy.linalg as la
 from brain import params, sensors
-# from python_mysql_connect import insert_sensor_data, insert_current_pos, query_current_pos
-
 
 def vector_angle(v1, v2):
     '''
@@ -21,11 +19,6 @@ def vector_angle(v1, v2):
 class Move:
 
     def __init__(self):
-
-        # Type of move
-        # - Virtual: move was performed virtually to connect nodes in the graph
-        # - Real: move was performed by the robot and has sensor data to prove it
-        self.type = None
 
         # Initial position [X, Y, Z, Theta]
         self.initial_pos = [0, 0, 0, 0]
@@ -52,7 +45,6 @@ class Move:
         self.raw_data = []
         self.smooth_data = []
         self.pos_vectors = []
-        self.global_pos_vectors = []
         self.weighted_pos_vectors = []
 
     def getMotionPlan(self):
@@ -61,29 +53,43 @@ class Move:
             functions
         '''
 
-    # Get angle difference between desired movement vector and generic
-    # "forward vector"
-        self.rot_angle = vector_angle(
-            params.p['FORWARD_VECTOR'], self.direction_vector)
+        # Determine motion primitives based on direction vector
+        # if self.direction_vector[0] > 0 and self.direction_vector[1] > 0:
+        ref_vector = params.p['FORWARD_VECTOR']
+        rot_direction = 'right'
+        move_direction = 'forward'
 
-        # Get forward motion from desired movement vector
-        self.distance = params.p['MOVE_PER_TURN'] * self.direction_vector
+        if self.direction_vector[0] < 0 and self.direction_vector[1] > 0:
+            # print "Rotating left and then forward"
+            ref_vector = params.p['FORWARD_VECTOR']
+            rot_direction = 'left'
+            move_direction = 'forward'
+
+        if self.direction_vector[0] > 0 and self.direction_vector[1] < 0:
+            # print "Rotating left and then backward"
+            ref_vector = params.p['BACKWARD_VECTOR']
+            rot_direction = 'left'
+            move_direction = 'backward'
+
+        if self.direction_vector[0] < 0 and self.direction_vector[1] < 0:
+            # print "Rotating right and then backward"
+            ref_vector = params.p['BACKWARD_VECTOR']
+            rot_direction = 'right'
+            move_direction = 'backward'
+
+        # Get angle difference between desired movement vector and previously defined reference vector
+        self.rot_angle = vector_angle(self.direction_vector, ref_vector)
+
+        # Get motion from desired movement vector
+        self.distance = params.p['MOVEMENT_WEIGHT'] * self.direction_vector
 
         # Set movement delta list (delX, delY, delZ, delTheta)
         self.delta = self.distance.tolist()
         self.delta.append(self.rot_angle)
 
-        # Determine direction of rotation
-        if self.rot_angle < 0:
-            self.primitives.append(('left', abs(self.rot_angle)))
-
-        if self.rot_angle > 0:
-            self.primitives.append(('right', abs(self.rot_angle)))
-
-        # Determine direction of movement
-        # TODO: eventually return 'backwards' if the angle rotation required is
-        # smaller
-        self.primitives.append(('forward', la.norm(self.distance)))
+        # Add motion primitives to move object (rotation then translation)
+        self.primitives.append((rot_direction, abs(self.rot_angle)))
+        self.primitives.append((move_direction, la.norm(self.distance)))
 
     def describe(self):
         '''
@@ -91,7 +97,6 @@ class Move:
         '''
 
         print "Move description: "
-        print "          TYPE: " + str(self.type)
         print "   INITIAL POS: " + str(self.initial_pos)
         print "     FINAL POS: " + str(self.final_pos)
         print " DIRECTION VEC: " + str(self.direction_vector)
@@ -100,5 +105,4 @@ class Move:
         print "      RAW DATA: " + str(self.raw_data)
         print "   SMOOTH DATA: " + str(self.smooth_data)
         print "    POS VECTOR: " + str(self.pos_vectors)
-        print "GLOBAL POS VEC: " + str(self.global_pos_vectors)
         print "WEIGHT POS VEC: " + str(self.weighted_pos_vectors)

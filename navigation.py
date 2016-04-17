@@ -5,6 +5,7 @@
 from brain import ser, params, sensors
 from motor import moveBot
 from Buzzer import Buzzer
+from Move import Move
 import time
 
 import numpy as np
@@ -23,14 +24,17 @@ def navigate():
     buzzer = Buzzer()
     buzzer.play(4)
 
-    # Initialize list for history of moves
-    move_hist = []
+    # Initialize list for history of moves, start it with a "blank" move
+    move_hist = [Move()]
 
     # Enter the exploration loop
-    for range(params.p['MAX_ITER']):
+    for i in range(params.p['MAX_ITER']):
 
         # Execute explore function and save results
         move_hist.append(explore(move_hist[-1]))
+
+        # Wait between moves
+        time.sleep(params.p['WAIT_TIME'])
 
 def explore(old_move):
     '''
@@ -38,12 +42,6 @@ def explore(old_move):
         In: previous move
         Out: new move
     '''
-
-    # Make sure that old_move is not a blank object
-    if old_move is None:
-
-        # Initialize old move as "blank" move
-        old_move = Move()
 
     # Test output
     print "Exploring (moving to a new location) ..."
@@ -55,9 +53,6 @@ def explore(old_move):
     # Initialize new move object
     move = Move()
 
-    # Make sure move is set as a real move (performed by robot)
-    move.type = "Real"
-
     # Initial position set to position of previous area
     move.initial_pos = old_move.final_pos
 
@@ -67,15 +62,16 @@ def explore(old_move):
     # Break down movement vector into motion primitives that robot can execute
     move.getMotionPlan()
 
-    for (direction, amount) in move.primitives:
-        print "Moving " + str(direction) + " " + str(amount)
-        # moveBot(direction, amount, params.p['MOTOR_PWR'])
-
     # Get final position by summing initial position and delta
     move.final_pos = [init + delt for init, delt in zip(move.initial_pos, move.delta)]
 
     # Debug print move fields
     move.describe()
+
+    # Execute motion from given move primitives
+    for (direction, amount) in move.primitives:
+        print "Moving " + str(direction) + " " + str(amount)
+        # moveBot(direction, amount, params.p['MOTOR_PWR'])
 
     # Return finished move object
     return move
@@ -119,8 +115,8 @@ def smoothData(data):
     # Create empty data array to store smooth data
     data_smooth = []
 
-    # Print data
-    print "Data: " + data
+    # # Test print
+    # print "Data: ", data
 
     # Simple median smoothing
     for i in range(len(data[0])):
@@ -128,19 +124,15 @@ def smoothData(data):
         # Make a list of all the different readings from one
         strip = [sample[i] for sample in data]
 
-        print "Strip: " + strip
+        # print "Strip: ", strip
 
         # Add them to data_smooth
-        data_smooth.append(np.median(np.array(strip)))
-
-        # print i
-        # print data_smooth[i]
+        data_smooth.append(np.median(map(int, strip)))
 
     return data_smooth
 
 
-
-def get_move_vector():
+def get_move_vector(move):
     '''
         Performs movement based on gradient direction of sensor readings.
         Returns vector direction of movement
@@ -150,14 +142,10 @@ def get_move_vector():
     move.raw_data = readData()
 
     # Smooth raw data from sensors
-    move.smooth_data = smoothData(raw_data)
+    move.smooth_data = smoothData(move.raw_data)
 
     # Determine position vectors for sensor data (with respect to robot frame)
     move.pos_vectors = [sensors.to_robot(sensors.sensor_names[i], move.smooth_data[i])
-                        for i in range(len(sensors.sensor_names))]
-
-    # Determine position vectors for sensor data (with respect to global frame)
-    move.global_pos_vectors = [sensors.to_global(sensors.sensor_names[i], move.smooth_data[i], move.initial_pos)
                         for i in range(len(sensors.sensor_names))]
 
     # Combine readings together using sensor weights
@@ -165,8 +153,8 @@ def get_move_vector():
         # Second element in sensor dictionary entry is sensor weight
         sensor_weight = sensors.s[sensors.sensor_names[i]][1]
         # Multiply pos readings by sensor weight
-        weighted_vector = np.multiply(
-            sensor_weight, move.pos_vectors[i]).tolist()
+        weighted_vector = np.multiply(sensor_weight, move.pos_vectors[i]).tolist()
+
         move.weighted_pos_vectors.append(
             [item for sublist in weighted_vector for item in sublist])  # Flatten result
 
