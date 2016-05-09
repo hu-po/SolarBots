@@ -32,7 +32,7 @@ params.addParam('DISTANCE_WEIGHT', [0.1, 0.1, 0.2],
 # Add Motor Parameters
 params.addParam('SEC_PER_TURN', 10, 'Seconds required to turn 1 unit')
 params.addParam('SEC_PER_MOVE', 1, 'Seconds required to move 1 unit')
-params.addParam('DIST_PER_MOVE', 10.0, 'Centimeters in 1 move unit')
+params.addParam('DIST_PER_MOVE', 3.0, 'Centimeters in 1 move unit')
 params.addParam('DEG_PER_TURN', 2*math.pi, 'Radians in 1 turn unit')
 params.addParam('MOTOR_DEFAULT_PWR', 50, 'Default starting power for the motor')
 params.addParam('MOTOR_OFFSET_PWR', -1, 'Difference between Motor 1 and Motor 2')

@@ -3,11 +3,11 @@
 # Description: Parameters class defines parameter dictionary, which
 # contains robot parameters
 
-class Parameters:
+class Parameters(object):
 
     def __init__(self):
 
-        # Initialize room dictionary
+        # Initialize parameter dictionary
         self.p = {}  # Parameter
         self.d = {}  # Description
 

@@ -5,6 +5,7 @@
 
 import numpy as np
 from numpy import cos, sin
+import logging
 
 def calculateTransform(loc):
     '''
@@ -28,7 +29,7 @@ def calculateTransform(loc):
     return T
 
 
-class Sensor:
+class Sensor(object):
 
     def __init__(self):
 
@@ -39,6 +40,9 @@ class Sensor:
         self.sensor_names = []
 
     def addSensor(self, name, num, weight, location):
+        '''
+            Adds a sensor (+info) to the dictionary within the Sensor object
+        '''
 
         # Name, number, location (in robot frame), and transformation (to robot
         # frame) of sensor
@@ -47,19 +51,21 @@ class Sensor:
         # Add sensor name to list of names (Note* Order of this determines sampling order)
         self.sensor_names.append((name, num))
 
-    # Transform sensor reading to robot frame
     def to_robot(self, key, reading):
+        '''
+            Transform a sensor reading to robot frame
+        '''
 
         # Get proper transform by using key (name, num) to get right sensor
         T = self.s[key][2] # Transform is 3rd element in dictionary entry
 
-        # print T
-        # print np.array([reading, 0, 0, 1]).reshape((4, 1))
-
         # Multiply reading by transform
         new_read = np.dot(T, np.array([reading, 0, 0, 1]).reshape((4, 1)))
 
-        # print new_read
+        # # Print debug info to logger
+        # logger.debug('Inside to_robot(): T: ', new_read)
+        # logger.debug('Inside to_robot(): Sensor reading: ', np.array([reading, 0, 0, 1]).reshape((4, 1)))
+        # logger.debug('Inside to_robot(): new_read: ', new_read)
 
         # Remove extra digit from end
         new_read = new_read.tolist()[:-1]
@@ -67,13 +73,32 @@ class Sensor:
         # Return new reading (as a list)
         return new_read
 
-    def numSensor(self, names):  # Returns the number of a type of sensor
+    def numSensor(self, names):
+        '''
+            Returns the number of a type of sensor
+        '''
 
         # Determine number of sensors with given names
-        num = [x[0] for x in self.s.keys() if x[0] in names]
+        return len([x[0] for x in self.s.keys() if x[0] in names])
 
-        return len(num)
+    def get_weights(self):
+        '''
+            Returns a list of sensor weights
+        '''
 
-    def get_weights(self):  # Returns a list of sensor weights
-        (_, weights, _) = [item for item in self.s]
+        (_, weights, _) = (item for item in self.s)
         return weights
+
+    def __str__(self):
+        '''
+            Returns instance arguments
+        '''
+
+        print "---- Sensor object .__str__ ----"
+
+        print "self.sensor_names: ", self.sensor_names
+
+        for k, v in self.s.iteritems():
+            print k, " : ", v
+
+        print "--------------------------------"

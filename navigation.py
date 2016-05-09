@@ -71,7 +71,7 @@ def explore(old_move):
     # Execute motion from given move primitives
     for (direction, amount) in move.primitives:
         print "Moving " + str(direction) + " " + str(amount)
-        # moveBot(direction, amount, params.p['MOTOR_PWR'])
+        moveBot(direction, distance=amount, num=params.p['MOTOR_PWR'])
 
     # Return finished move object
     return move

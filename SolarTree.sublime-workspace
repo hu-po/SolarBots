@@ -1,0 +1,513 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"cent",
+				"centers_right"
+			],
+			[
+				"new",
+				"new_angle2"
+			],
+			[
+				"new_ang",
+				"new_angle1"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "Move.py",
+			"settings":
+			{
+				"buffer_size": 3760,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Parameters.py",
+			"settings":
+			{
+				"buffer_size": 475,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "PinMaster.py",
+			"settings":
+			{
+				"buffer_size": 378,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Buzzer.py",
+			"settings":
+			{
+				"buffer_size": 3387,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "brain.py",
+			"settings":
+			{
+				"buffer_size": 3383,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "push.sh",
+			"settings":
+			{
+				"buffer_size": 119,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Sensor.py",
+			"settings":
+			{
+				"buffer_size": 2762,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "# Author: Hugo P.\n# Project: https://github.com/HugoCMU/SolarTree\n# Description: Contains all the low level motor/move functions for the robot\n\nfrom time import sleep\nimport RPi.GPIO as GPIO\nfrom brain import params, pins\nimport logging\n\n# Initialize and setup GPIO\nGPIO.setmode(GPIO.BCM)\nGPIO.cleanup()\n\n# Setup motor pin output\nGPIO.setup(pins.p['MOTOR1A'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR1B'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR1E'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR2A'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR2B'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR2E'], GPIO.OUT)\n\n# Output low signal\nGPIO.output(pins.p['MOTOR1A'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR1B'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR1E'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR2A'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR2B'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR2E'], GPIO.LOW)\n\n# Initialize PWM for  both motors\nE1 = GPIO.PWM(pins.p['MOTOR1E'], params.p['MOTOR_PWM_FREQ'])\nE2 = GPIO.PWM(pins.p['MOTOR2E'], params.p['MOTOR_PWM_FREQ'])\n\n# Change speed of motor by controlling duty cycle\n# def speed(num):\n#     E1.ChangeDutyCycle(num)\n#     E2.ChangeDutyCycle(num + MOTOR_OFFSET_PWR)\n#     return\n\n\ndef moveBot(direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous_mode=False):\n\n    # Start both sowftware PWMs\n    E1.start(num)\n    E2.start(num + params.p['MOTOR_OFFSET_PWR'])\n\n    # Alternatively send a HIGH signal for 100%\n    # GPIO.output(Motor1E, GPIO.HIGH)\n    # GPIO.output(Motor2E, GPIO.HIGH)\n\n    # # Debug print\n    logger.debug('Continuous_mode: ', continuous_mode)\n\n    if direction == 'forward':\n        logger.info('Going forwards ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.LOW)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])\n\n    elif direction == 'backward':\n        logger.info('Going backwards ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.HIGH)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])\n\n    elif direction == 'left':\n        logger.info('Turning Left ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.HIGH)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])\n\n    elif direction == 'right':\n        logger.info('Turning Right ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.LOW)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])\n\n    else:\n        print \"ERROR: Wrong direction input\"\n\n    if not continuous_mode:\n        motorStop()\n\n    return\n\n\ndef GPIOclean():  # Cleanup GPIO output\n    GPIO.cleanup()\n\n\ndef motorStop():    # Stop motors\n    print \"Stopping ...\"\n\n    E1.stop()\n    E2.stop()\n\n    GPIO.output(pins.p['MOTOR1E'], GPIO.LOW)\n    GPIO.output(pins.p['MOTOR2E'], GPIO.LOW)\n\n\ndef main():\n\n    sleep(1)\n\n    moveBot('forward', 1, params.p['MOTOR_DEFAULT_PWR'])  # Move forward 1 unit (10 cm)\n\n    sleep(1)\n\n    moveBot('left', 90, params.p['MOTOR_DEFAULT_PWR'])  # Make a 90 degree turn\n\n    sleep(1)\n\n    moveBot('forward', 1, params.p['MOTOR_DEFAULT_PWR'])\n\n    sleep(1)\n\n    moveBot('right', 90, params.p['MOTOR_DEFAULT_PWR'])\n\n    GPIOclean()\n\nif __name__ == '__main__':\n    main()\n",
+			"file": "motor.py",
+			"file_size": 3889,
+			"file_write_time": 131065054597353690,
+			"settings":
+			{
+				"buffer_size": 3888,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/bigrig/SolarTree"
+	],
+	"file_history":
+	[
+		"/home/bigrig/SolarTree/brain.py",
+		"/home/bigrig/SolarTree/navigation.py",
+		"/home/bigrig/SolarTree/SolarTree.sublime-project",
+		"/home/bigrig/SolarTree/Area.py",
+		"/home/bigrig/Sentinel/src/cv_camera/src/capture.cpp",
+		"/home/bigrig/Sentinel/src/sentinel_tracking/src/camera_calibration_raw_output",
+		"/home/bigrig/Sentinel/src/sentinel_tracking/src/image_right.png",
+		"/home/bigrig/Sentinel/src/sentinel_tracking/CMakeLists.txt",
+		"/home/bigrig/Sentinel/src/sentinel_tracking/package.xml",
+		"/home/bigrig/Sentinel/src/cv_camera/CMakeLists.txt",
+		"/home/bigrig/Sentinel/src/cv_camera/include/cv_camera/capture.h",
+		"/home/bigrig/Sentinel/src/cv_camera/src/driver.cpp",
+		"/home/bigrig/Sentinel/Sentinel_nodelet.launch"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"time",
+			"type",
+			"    \n",
+			"\n    ",
+			"y.get_param(",
+			"opencv",
+			"sensor_msgs",
+			"node_",
+			"bridge_",
+			"getCvImage",
+			"frame_id",
+			"image_width",
+			"video2"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"y.get_param(/"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 7,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "Move.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3760,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								519,
+								519
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Parameters.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 475,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								214,
+								214
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "PinMaster.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 378,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								320,
+								320
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "Buzzer.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3387,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								397,
+								397
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "brain.py",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 3383,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								235,
+								235
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "push.sh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 119,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								119,
+								119
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "Sensor.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2762,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								667,
+								667
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "motor.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3888,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								994,
+								994
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 25.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "SolarTree.sublime-project",
+	"replace":
+	{
+		"height": 46.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/SolarTree/SolarTree.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 250.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

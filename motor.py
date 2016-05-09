@@ -5,6 +5,7 @@
 from time import sleep
 import RPi.GPIO as GPIO
 from brain import params, pins
+import logging
 
 # Initialize and setup GPIO
 GPIO.setmode(GPIO.BCM)
@@ -30,7 +31,6 @@ GPIO.output(pins.p['MOTOR2E'], GPIO.LOW)
 E1 = GPIO.PWM(pins.p['MOTOR1E'], params.p['MOTOR_PWM_FREQ'])
 E2 = GPIO.PWM(pins.p['MOTOR2E'], params.p['MOTOR_PWM_FREQ'])
 
-
 # Change speed of motor by controlling duty cycle
 # def speed(num):
 #     E1.ChangeDutyCycle(num)
@@ -49,10 +49,10 @@ def moveBot(direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous
     # GPIO.output(Motor2E, GPIO.HIGH)
 
     # # Debug print
-    # print continuous_mode
+    # logger.debug('Continuous_mode: ', continuous_mode)
 
     if direction == 'forward':
-        print "Going forwards ..."
+        # logger.info('Going forwards ...')
 
         GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)
         GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)
@@ -64,7 +64,7 @@ def moveBot(direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous
             sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])
 
     elif direction == 'backward':
-        print "Going backwards ..."
+        # logger.info('Going backwards ...')
 
         GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)
         GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)
@@ -76,7 +76,7 @@ def moveBot(direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous
             sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])
 
     elif direction == 'left':
-        print "Turning Left ..."
+        # logger.info('Turning Left ...')
 
         GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)
         GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)
@@ -88,7 +88,7 @@ def moveBot(direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous
             sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])
 
     elif direction == 'right':
-        print "Turning Right ..."
+        # logger.info('Turning Right ...')
 
         GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)
         GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)
