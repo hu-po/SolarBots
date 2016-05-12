@@ -45,7 +45,7 @@ class Motor(object):
         #     return
 
 
-    def moveBot(self, direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous_mode=False):
+    def move_bot(self, direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous_mode=False):
         '''
             Moves the robot (runs motors) given motion primitives
         '''
@@ -121,9 +121,9 @@ class Motor(object):
 
         return
 
-    def __del__(self):
+    def stop_bot(self):
         '''
-            Destructor method kills PWMs and stops motors
+            Stop method kills PWMs and stops motors
         '''
 
         # Stop PWMs

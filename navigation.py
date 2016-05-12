@@ -12,154 +12,159 @@ import numpy as np
 import numpy.linalg as la
 
 def navigate():
-    '''
-        Function will call exploration() function to move robot, but will keep
-        track of previous moves
-    '''
+	'''
+		Function will call exploration() function to move robot, but will keep
+		track of previous moves
+	'''
 
-    # Test output
-    print "Navigating ..."
+	# Test output
+	print "Navigating ..."
 
-    # Beep to indicate begining of navigate step
-    buzzer = Buzzer()
-    buzzer.play(4)
+	# Beep to indicate begining of navigate step
+	buzzer = Buzzer()
+	buzzer.play(4)
 
-    # Enter the exploration loop
-    for i in xrange(params.p['MAX_ITER']):
+	# Create motor object
+	motor = Motor()
 
-        # Execute explore function and save results
-        explore()
+	try:
+		# Enter the exploration loop
+		for i in xrange(params.p['MAX_ITER']):
 
-        # Wait between moves
-        time.sleep(params.p['WAIT_TIME'])
+			# Execute explore function and save results
+			explore(motor)
 
-def explore():
-    '''
-        Function will initialize and execute a new "move"
-    '''
+			# Wait between moves
+			time.sleep(params.p['WAIT_TIME'])
+	except Exception:
+		pass
+	finally:
+		motor.stop_bot()
+	  
 
-    # Test output
-    print "Exploring (moving to a new location) ..."
 
-    # Beep to indicate begining of explore step
-    buzzer = Buzzer()
-    buzzer.play(5)
-    del buzzer
+def explore(motor):
+	'''
+		Function will initialize and execute a new "move"
+	'''
 
-    # Initialize new move object
-    move = Move()
+	# Test output
+	print "Exploring (moving to a new location) ..."
 
-    # Vector of movement used
-    move = get_move_vector(move)
+	# Beep to indicate begining of explore step
+	buzzer = Buzzer()
+	buzzer.play(5)
+	del buzzer
 
-    # Break down movement vector into motion primitives that robot can execute
-    move.getMotionPlan()
+	# Initialize new move object
+	move = Move()
 
-    # Debug print move fields
-    str(move)
+	# Vector of movement used
+	move = get_move_vector(move)
 
-    # Create motor object
-    motor = Motor()
+	# Break down movement vector into motion primitives that robot can execute
+	move.getMotionPlan()
 
-    # Execute motion from given move primitives
-    for (direction, amount) in move.primitives:
-        print "Moving " + str(direction) + " " + str(amount)
-        motor.moveBot(direction, distance=amount, num=params.p['MOTOR_PWR'])
+	# Debug print move fields
+	str(move)
 
-    # Delete motor object
-    del motor
+	# Execute motion from given move primitives
+	for (direction, amount) in move.primitives:
+		print "Moving " + str(direction) + " " + str(amount)
+		motor.move_bot(direction, distance=amount, num=params.p['MOTOR_PWR'])
+
 
 def sample():
-    '''
-        Sample Arduino sensors and return datapoints
-    '''
-    # Set timeout time (2 seconds)
-    timeout = time.time() + params.p['TIMEOUT']
+	'''
+		Sample Arduino sensors and return datapoints
+	'''
+	# Set timeout time (2 seconds)
+	timeout = time.time() + params.p['TIMEOUT']
 
-    # Initialize points list and begin loop
-    points = []
-    while len(points) != sensors.numSensor(['HC-SR04', 'TSL2561']):
+	# Initialize points list and begin loop
+	points = []
+	while len(points) != sensors.numSensor(['HC-SR04', 'TSL2561']):
 
-        # Gather points from serial object
-        points = ser.readline().strip().split(',')
+		# Gather points from serial object
+		points = ser.readline().strip().split(',')
 
-        # If function times out, set points to empty array and break
-        if time.time() > timeout:
-            points = [0] * (sensors.numSensor(['HC-SR04', 'TSL2561']))
-            break
+		# If function times out, set points to empty array and break
+		if time.time() > timeout:
+			points = [0] * (sensors.numSensor(['HC-SR04', 'TSL2561']))
+			break
 
-    return points
+	return points
 
 
 def readData():
-    print "Reading data ..."
+	print "Reading data ..."
 
-    # Create empty data list to store data
-    data = []
+	# Create empty data list to store data
+	data = []
 
-    # Populate empty data array
-    for i in xrange(params.p['DATA_SAMPLE_SIZE']):
-        data.append(sample())
+	# Populate empty data array
+	for i in xrange(params.p['DATA_SAMPLE_SIZE']):
+		data.append(sample())
 
-    return data
+	return data
 
 
 def smoothData(data):
-    print "Smoothing data ..."
+	print "Smoothing data ..."
 
-    # Create empty data array to store smooth data
-    data_smooth = []
+	# Create empty data array to store smooth data
+	data_smooth = []
 
-    # # Test print
-    # print "Data: ", data
+	# # Test print
+	# print "Data: ", data
 
-    # Simple median smoothing
-    for i in xrange(len(data[0])):
+	# Simple median smoothing
+	for i in xrange(len(data[0])):
 
-        # Make a list of all the different readings from one
-        strip = [int(sample[i]) for sample in data]
+		# Make a list of all the different readings from one
+		strip = [int(sample[i]) for sample in data]
 
-        # Add them to data_smooth
-        data_smooth.append(np.median(strip))
+		# Add them to data_smooth
+		data_smooth.append(np.median(strip))
 
-    return data_smooth
+	return data_smooth
 
 
 def get_move_vector(move):
-    '''
-        Performs movement based on gradient direction of sensor readings.
-        Returns vector direction of movement
-    '''
+	'''
+		Performs movement based on gradient direction of sensor readings.
+		Returns vector direction of movement
+	'''
 
-    # Read and Smooth raw data from sensors
-    move.smooth_data = smoothData(readData())
+	# Read and Smooth raw data from sensors
+	move.smooth_data = smoothData(readData())
 
-    # Combine readings together using sensor weights
-    for data, sensr in zip(move.smooth_data, sensors.s.iterkeys()):
+	# Combine readings together using sensor weights
+	for data, sensr in zip(move.smooth_data, sensors.s.iterkeys()):
 
-        # Determine position vector for sensor data (with respect to robot frame)
-        pos_vector = sensors.to_robot(sensr, data)
+		# Determine position vector for sensor data (with respect to robot frame)
+		pos_vector = sensors.to_robot(sensr, data)
 
-        # Second element in sensor dictionary entry is sensor weight
-        sensor_weight = sensors.s[sensr][1]
+		# Second element in sensor dictionary entry is sensor weight
+		sensor_weight = sensors.s[sensr][1]
 
-        # Multiply pos readings by sensor weight
-        weighted_vector = np.multiply(sensor_weight, pos_vector).tolist()
+		# Multiply pos readings by sensor weight
+		weighted_vector = np.multiply(sensor_weight, pos_vector).tolist()
 
-        move.weighted_pos_vectors.append(weighted_vector)
+		move.weighted_pos_vectors.append(weighted_vector)
 
-        # Debug print statements
-        # print "sensr, ", sensr
-        # print "data, ", data
-        # print "pos_vector, ", pos_vector
-        # print "sensor_weight, ", sensor_weight
-        # print "weighted_vector, ", weighted_vector
+		# Debug print statements
+		# print "sensr, ", sensr
+		# print "data, ", data
+		# print "pos_vector, ", pos_vector
+		# print "sensor_weight, ", sensor_weight
+		# print "weighted_vector, ", weighted_vector
 
-    # Combine weighted position vectors to get ultimate direction vector
-    move.direction_vector = np.mean(np.array(move.weighted_pos_vectors), axis=0)
+	# Combine weighted position vectors to get ultimate direction vector
+	move.direction_vector = np.mean(np.array(move.weighted_pos_vectors), axis=0)
 
-    # Return move object
-    return move
+	# Return move object
+	return move
 
 # ----------------------------------------------------
 #           MAIN ROBOT SENSE-PLAN-ACT LOOP
