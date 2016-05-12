@@ -16,15 +16,9 @@ def vector_angle(v1, v2):
     return np.arctan2(sinang, cosang)
 
 
-class Move:
+class Move(object):
 
     def __init__(self):
-
-        # Initial position [X, Y, Z, Theta]
-        self.initial_pos = [0, 0, 0, 0]
-
-        # Calculated final position [X, Y, Z, Theta]
-        self.final_pos = [0, 0, 0, 0]
 
         # Vector of movement used
         self.direction_vector = []
@@ -42,9 +36,7 @@ class Move:
         self.delta = [0, 0, 0, 0]
 
         # Sensor data for the move (populated in navigation.get_move_vector)
-        self.raw_data = []
         self.smooth_data = []
-        self.pos_vectors = []
         self.weighted_pos_vectors = []
 
     def getMotionPlan(self):
@@ -91,18 +83,15 @@ class Move:
         self.primitives.append((rot_direction, abs(self.rot_angle)))
         self.primitives.append((move_direction, la.norm(self.distance)))
 
-    def describe(self):
+    def __str__(self):
         '''
             Prints out information about the move
         '''
 
-        print "Move description: "
-        print "   INITIAL POS: " + str(self.initial_pos)
-        print "     FINAL POS: " + str(self.final_pos)
-        print " DIRECTION VEC: " + str(self.direction_vector)
-        print "    PRIMITIVES: " + str(self.primitives)
-        print "         DELTA: " + str(self.delta)
-        print "      RAW DATA: " + str(self.raw_data)
-        print "   SMOOTH DATA: " + str(self.smooth_data)
-        print "    POS VECTOR: " + str(self.pos_vectors)
-        print "WEIGHT POS VEC: " + str(self.weighted_pos_vectors)
+        return "Move object description:  \n DIRECTION VEC: {}\n    PRIMITIVES: {}\n         DELTA: {}\n   SMOOTH DATA: {}\nWEIGHT POS VEC: {}" \
+            .format(
+             str(self.direction_vector),
+             str(self.primitives),
+             str(self.delta),
+             str(self.smooth_data),
+             str(self.weighted_pos_vectors))

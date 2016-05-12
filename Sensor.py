@@ -6,6 +6,7 @@
 import numpy as np
 from numpy import cos, sin
 import logging
+from collections import OrderedDict
 
 def calculateTransform(loc):
     '''
@@ -33,23 +34,17 @@ class Sensor(object):
 
     def __init__(self):
 
-        # Initialize sensor dictionary
-        self.s = {}
-
-        # Initialize list of sensor names
-        self.sensor_names = []
+        # Initialize sensor dictionary (use Ordered dictionary to determine sampling order)
+        self.s = OrderedDict()
 
     def addSensor(self, name, num, weight, location):
         '''
             Adds a sensor (+info) to the dictionary within the Sensor object
         '''
 
-        # Name, number, location (in robot frame), and transformation (to robot
-        # frame) of sensor
+        # Name, number tuple as the key.  Location (in robot frame), weight, and transformation (to robot
+        # frame) as the value
         self.s[(name, num)] = (location, weight, calculateTransform(location))
-
-        # Add sensor name to list of names (Note* Order of this determines sampling order)
-        self.sensor_names.append((name, num))
 
     def to_robot(self, key, reading):
         '''
@@ -60,15 +55,15 @@ class Sensor(object):
         T = self.s[key][2] # Transform is 3rd element in dictionary entry
 
         # Multiply reading by transform
-        new_read = np.dot(T, np.array([reading, 0, 0, 1]).reshape((4, 1)))
+        new_read = np.transpose(np.dot(T, np.array([[reading], [0], [0], [1]])))
 
         # # Print debug info to logger
         # logger.debug('Inside to_robot(): T: ', new_read)
         # logger.debug('Inside to_robot(): Sensor reading: ', np.array([reading, 0, 0, 1]).reshape((4, 1)))
-        # logger.debug('Inside to_robot(): new_read: ', new_read)
+        # print 'new_read: ', new_read
 
-        # Remove extra digit from end
-        new_read = new_read.tolist()[:-1]
+        # Remove external brackets from array datatype and remove extra digit from end
+        new_read = new_read.tolist()[0][:-1]
 
         # Return new reading (as a list)
         return new_read
@@ -78,7 +73,7 @@ class Sensor(object):
             Returns the number of a type of sensor
         '''
 
-        # Determine number of sensors with given names
+        # Determine number of sensors with given names (len can take generators (any iterables))
         return len([x[0] for x in self.s.keys() if x[0] in names])
 
     def get_weights(self):
@@ -87,6 +82,7 @@ class Sensor(object):
         '''
 
         (_, weights, _) = (item for item in self.s)
+
         return weights
 
     def __str__(self):
@@ -102,3 +98,5 @@ class Sensor(object):
             print k, " : ", v
 
         print "--------------------------------"
+
+        return ''
