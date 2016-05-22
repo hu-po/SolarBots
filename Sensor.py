@@ -3,6 +3,7 @@
 # Description: Sensor class defines sensor objects, with location, type,
 #               as well as frame transformation functions etc
 
+from __future__ import print_function
 import numpy as np
 from numpy import cos, sin
 import logging
@@ -57,10 +58,9 @@ class Sensor(object):
         # Multiply reading by transform
         new_read = np.transpose(np.dot(T, np.array([[reading], [0], [0], [1]])))
 
-        # # Print debug info to logger
-        # logger.debug('Inside to_robot(): T: ', new_read)
-        # logger.debug('Inside to_robot(): Sensor reading: ', np.array([reading, 0, 0, 1]).reshape((4, 1)))
-        # print 'new_read: ', new_read
+        # print('Inside to_robot(): T: ', new_read)
+        # print('Inside to_robot(): Sensor reading: ', np.array([reading, 0, 0, 1]).reshape((4, 1)))
+        # print('new_read: ', new_read)
 
         # Remove external brackets from array datatype and remove extra digit from end
         new_read = new_read.tolist()[0][:-1]
@@ -70,10 +70,10 @@ class Sensor(object):
 
     def numSensor(self, names):
         '''
-            Returns the number of a type of sensor
+            Returns the number (amount) of a type of sensor
         '''
 
-        # Determine number of sensors with given names (len can take generators (any iterables))
+        # Determine number of sensors with given names
         return len([x[0] for x in self.s.keys() if x[0] in names])
 
     def get_weights(self):
@@ -89,14 +89,4 @@ class Sensor(object):
         '''
             Returns instance arguments
         '''
-
-        print "---- Sensor object .__str__ ----"
-
-        print "self.sensor_names: ", self.sensor_names
-
-        for k, v in self.s.iteritems():
-            print k, " : ", v
-
-        print "--------------------------------"
-
-        return ''
+        return ["%s : %s" % (k,v) for k,v in self.s.iteritems()]

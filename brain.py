@@ -41,10 +41,8 @@ params.addParam('SEC_PER_TURN', 2.8, 'Seconds required to turn 1 unit')
 params.addParam('SEC_PER_MOVE', 1.0, 'Seconds required to move 1 unit')
 params.addParam('DIST_PER_MOVE', 10.0, 'Centimeters in 1 move unit')
 params.addParam('DEG_PER_TURN', 2*math.pi, 'Radians in 1 turn unit')
-params.addParam('MOTOR_DEFAULT_PWR', 30, 'Default starting power for the motor')
-params.addParam('MOTOR_OFFSET_PWR', 0, 'Difference between Motor 1 and Motor 2')
-params.addParam('MOTOR_PWM_FREQ', 357, 'Frequency of PWM for motors')
-params.addParam('MOTOR_PWR', 30, '0 - 100 speed of motor')
+params.addParam('MOTOR_DEFAULT_PWM_DC', 30, 'Default duty cycle for the motor PWM (0 - 100)')
+params.addParam('MOTOR_DEFAULT_PWM_FREQ', 357, 'Default frequency for the motor PWM')
 
 # Create Sensor object
 sensors = Sensor()

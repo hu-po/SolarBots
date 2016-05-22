@@ -20,14 +20,6 @@
 	"buffers":
 	[
 		{
-			"file": "Move.py",
-			"settings":
-			{
-				"buffer_size": 3760,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "Parameters.py",
 			"settings":
 			{
@@ -44,10 +36,18 @@
 			}
 		},
 		{
-			"file": "Buzzer.py",
+			"file": "Sensor.py",
 			"settings":
 			{
-				"buffer_size": 3387,
+				"buffer_size": 3096,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Move.py",
+			"settings":
+			{
+				"buffer_size": 3337,
 				"line_ending": "Unix"
 			}
 		},
@@ -55,34 +55,34 @@
 			"file": "brain.py",
 			"settings":
 			{
-				"buffer_size": 3383,
+				"buffer_size": 3263,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "push.sh",
+			"contents": "# Author: Hugo P.\n# Project: https://github.com/HugoCMU/SolarTree\n# Description: Program uses the sensors to determine best sequence of moves for robot to execute.\n\nfrom brain import ser, params, sensors\nfrom motor import Motor\nfrom Buzzer import Buzzer\nfrom Move import Move\nimport time\n\nimport numpy as np\nimport numpy.linalg as la\n\ndef navigate():\n	'''\n		Function will call exploration() function to move robot, but will keep\n		track of previous moves\n	'''\n\n	# Test output\n	print \"Navigating ...\"\n\n	# Beep to indicate begining of navigate step\n	buzzer = Buzzer()\n	buzzer.play(4)\n\n	# Create motor object\n	motor = Motor()\n\n	try:\n		# Enter the exploration loop\n		for i in xrange(params.p['MAX_ITER']):\n\n			# Execute explore function and save results\n			explore(motor)\n\n			# Wait between moves\n			time.sleep(params.p['WAIT_TIME'])\n	except Exception:\n		pass\n	finally:\n		motor.stop_bot()\n	  \n\n\ndef explore(motor):\n	'''\n		Function will initialize and execute a new \"move\"\n	'''\n\n	# Test output\n	print \"Exploring (moving to a new location) ...\"\n\n	# Beep to indicate begining of explore step\n	buzzer = Buzzer()\n	buzzer.play(5)\n	del buzzer\n\n	# Initialize new move object\n	move = Move()\n\n	# Vector of movement used\n	move = get_move_vector(move)\n\n	# Break down movement vector into motion primitives that robot can execute\n	move.getMotionPlan()\n\n	# Debug print move fields\n	str(move)\n\n	# Execute motion from given move primitives\n	for (direction, amount) in move.primitives:\n		print \"Moving \" + str(direction) + \" \" + str(amount)\n		motor.move_bot(direction, distance=amount, num=params.p['MOTOR_PWR'])\n\n\ndef sample():\n	'''\n		Sample Arduino sensors and return datapoints\n	'''\n	# Set timeout time (2 seconds)\n	timeout = time.time() + params.p['TIMEOUT']\n\n	# Initialize points list and begin loop\n	points = []\n	while len(points) != sensors.numSensor(['HC-SR04', 'TSL2561']):\n\n		# Gather points from serial object\n		points = ser.readline().strip().split(',')\n\n		# If function times out, set points to empty array and break\n		if time.time() > timeout:\n			points = [0] * (sensors.numSensor(['HC-SR04', 'TSL2561']))\n			break\n\n	return points\n\n\ndef readData():\n	print \"Reading data ...\"\n\n	# Create empty data list to store data\n	data = []\n\n	# Populate empty data array\n	for i in xrange(params.p['DATA_SAMPLE_SIZE']):\n		data.append(sample())\n\n	return data\n\n\ndef smoothData(data):\n	print \"Smoothing data ...\"\n\n	# Create empty data array to store smooth data\n	data_smooth = []\n\n	# # Test print\n	# print \"Data: \", data\n\n	# Simple median smoothing\n	for i in xrange(len(data[0])):\n\n		# Make a list of all the different readings from one\n		strip = [int(sample[i]) for sample in data]\n\n		# Add them to data_smooth\n		data_smooth.append(np.median(strip))\n\n	return data_smooth\n\n\ndef get_move_vector(move):\n	'''\n		Performs movement based on gradient direction of sensor readings.\n		Returns vector direction of movement\n	'''\n\n	# Read and Smooth raw data from sensors\n	move.smooth_data = smoothData(readData())\n\n	# Combine readings together using sensor weights\n	for data, sensr in zip(move.smooth_data, sensors.s.iterkeys()):\n\n		# Determine position vector for sensor data (with respect to robot frame)\n		pos_vector = sensors.to_robot(sensr, data)\n\n		# Second element in sensor dictionary entry is sensor weight\n		sensor_weight = sensors.s[sensr][1]\n\n		# Multiply pos readings by sensor weight\n		weighted_vector = np.multiply(sensor_weight, pos_vector).tolist()\n\n		move.weighted_pos_vectors.append(weighted_vector)\n\n		# Debug print statements\n		# print \"sensr, \", sensr\n		# print \"data, \", data\n		# print \"pos_vector, \", pos_vector\n		# print \"sensor_weight, \", sensor_weight\n		# print \"weighted_vector, \", weighted_vector\n\n	# Combine weighted position vectors to get ultimate direction vector\n	move.direction_vector = np.mean(np.array(move.weighted_pos_vectors), axis=0)\n\n	# Return move object\n	return move\n\n# ----------------------------------------------------\n#           MAIN ROBOT SENSE-PLAN-ACT LOOP\n# ----------------------------------------------------\n\nprint \"Starting navigation phase ...\"\n\nnavigate()\n\nprint \"Exited navigation phase ...\"",
+			"file": "navigation.py",
+			"file_size": 4116,
+			"file_write_time": 131074959918977545,
 			"settings":
 			{
-				"buffer_size": 119,
+				"buffer_size": 4116,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "Sensor.py",
-			"settings":
-			{
-				"buffer_size": 2762,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "# Author: Hugo P.\n# Project: https://github.com/HugoCMU/SolarTree\n# Description: Contains all the low level motor/move functions for the robot\n\nfrom time import sleep\nimport RPi.GPIO as GPIO\nfrom brain import params, pins\nimport logging\n\n# Initialize and setup GPIO\nGPIO.setmode(GPIO.BCM)\nGPIO.cleanup()\n\n# Setup motor pin output\nGPIO.setup(pins.p['MOTOR1A'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR1B'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR1E'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR2A'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR2B'], GPIO.OUT)\nGPIO.setup(pins.p['MOTOR2E'], GPIO.OUT)\n\n# Output low signal\nGPIO.output(pins.p['MOTOR1A'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR1B'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR1E'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR2A'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR2B'], GPIO.LOW)\nGPIO.output(pins.p['MOTOR2E'], GPIO.LOW)\n\n# Initialize PWM for  both motors\nE1 = GPIO.PWM(pins.p['MOTOR1E'], params.p['MOTOR_PWM_FREQ'])\nE2 = GPIO.PWM(pins.p['MOTOR2E'], params.p['MOTOR_PWM_FREQ'])\n\n# Change speed of motor by controlling duty cycle\n# def speed(num):\n#     E1.ChangeDutyCycle(num)\n#     E2.ChangeDutyCycle(num + MOTOR_OFFSET_PWR)\n#     return\n\n\ndef moveBot(direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous_mode=False):\n\n    # Start both sowftware PWMs\n    E1.start(num)\n    E2.start(num + params.p['MOTOR_OFFSET_PWR'])\n\n    # Alternatively send a HIGH signal for 100%\n    # GPIO.output(Motor1E, GPIO.HIGH)\n    # GPIO.output(Motor2E, GPIO.HIGH)\n\n    # # Debug print\n    logger.debug('Continuous_mode: ', continuous_mode)\n\n    if direction == 'forward':\n        logger.info('Going forwards ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.LOW)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])\n\n    elif direction == 'backward':\n        logger.info('Going backwards ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.HIGH)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])\n\n    elif direction == 'left':\n        logger.info('Turning Left ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.HIGH)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])\n\n    elif direction == 'right':\n        logger.info('Turning Right ...')\n\n        GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)\n        GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)\n\n        GPIO.output(pins.p['MOTOR2A'], GPIO.HIGH)\n        GPIO.output(pins.p['MOTOR2B'], GPIO.LOW)\n\n        if not continuous_mode:\n            sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])\n\n    else:\n        print \"ERROR: Wrong direction input\"\n\n    if not continuous_mode:\n        motorStop()\n\n    return\n\n\ndef GPIOclean():  # Cleanup GPIO output\n    GPIO.cleanup()\n\n\ndef motorStop():    # Stop motors\n    print \"Stopping ...\"\n\n    E1.stop()\n    E2.stop()\n\n    GPIO.output(pins.p['MOTOR1E'], GPIO.LOW)\n    GPIO.output(pins.p['MOTOR2E'], GPIO.LOW)\n\n\ndef main():\n\n    sleep(1)\n\n    moveBot('forward', 1, params.p['MOTOR_DEFAULT_PWR'])  # Move forward 1 unit (10 cm)\n\n    sleep(1)\n\n    moveBot('left', 90, params.p['MOTOR_DEFAULT_PWR'])  # Make a 90 degree turn\n\n    sleep(1)\n\n    moveBot('forward', 1, params.p['MOTOR_DEFAULT_PWR'])\n\n    sleep(1)\n\n    moveBot('right', 90, params.p['MOTOR_DEFAULT_PWR'])\n\n    GPIOclean()\n\nif __name__ == '__main__':\n    main()\n",
 			"file": "motor.py",
-			"file_size": 3889,
-			"file_write_time": 131065054597353690,
 			"settings":
 			{
-				"buffer_size": 3888,
+				"buffer_size": 5063,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Buzzer.py",
+			"settings":
+			{
+				"buffer_size": 3445,
 				"line_ending": "Unix"
 			}
 		}
@@ -123,6 +123,8 @@
 	],
 	"file_history":
 	[
+		"/home/bigrig/Documents/Programming Questions/Fibonacci.py",
+		"/home/bigrig/SolarTree/push.sh",
 		"/home/bigrig/SolarTree/brain.py",
 		"/home/bigrig/SolarTree/navigation.py",
 		"/home/bigrig/SolarTree/SolarTree.sublime-project",
@@ -153,6 +155,12 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"object",
+			"\n        ",
+			"initial",
+			"smooth",
+			"'''\n",
+			"logger",
 			"time",
 			"type",
 			"    \n",
@@ -184,41 +192,11 @@
 	"groups":
 	[
 		{
-			"selected": 7,
+			"selected": 5,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "Move.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3760,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								519,
-								519
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
 					"file": "Parameters.py",
 					"semi_transient": false,
 					"settings":
@@ -230,36 +208,8 @@
 						"selection":
 						[
 							[
-								214,
-								214
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "PinMaster.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 378,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								320,
-								320
+								324,
+								324
 							]
 						],
 						"settings":
@@ -274,85 +224,25 @@
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "Buzzer.py",
+					"buffer": 1,
+					"file": "PinMaster.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3387,
+						"buffer_size": 378,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								397,
-								397
+								17,
+								17
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "brain.py",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 3383,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								235,
-								235
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "push.sh",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 119,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								119,
-								119
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/ShellScript/Shell-Unix-Generic.sublime-syntax"
+							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -362,20 +252,50 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 2,
 					"file": "Sensor.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2762,
+						"buffer_size": 3096,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								667,
-								667
+								2589,
+								2589
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 969.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "Move.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3337,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								190,
+								190
 							]
 						],
 						"settings":
@@ -392,20 +312,110 @@
 					"type": "text"
 				},
 				{
-					"buffer": 7,
-					"file": "motor.py",
+					"buffer": 4,
+					"file": "brain.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3888,
+						"buffer_size": 3263,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								994,
-								994
+								881,
+								881
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 306.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "navigation.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4116,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								988,
+								988
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 413.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "motor.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5063,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4315,
+								4315
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1377.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "Buzzer.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3445,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								710,
+								710
 							]
 						],
 						"settings":
@@ -418,7 +428,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 6,
 					"type": "text"
 				}
 			]

@@ -8,6 +8,8 @@ from brain import params, pins
 import logging
 import math
 
+import Move
+
 # Initialize and setup GPIO
 GPIO.setmode(GPIO.BCM)
 
@@ -35,34 +37,52 @@ class Motor(object):
         GPIO.output(pins.p['MOTOR2E'], GPIO.LOW)
 
         # Initialize PWM for  both motors
-        self.E1 = GPIO.PWM(pins.p['MOTOR1E'], params.p['MOTOR_PWM_FREQ'])
-        self.E2 = GPIO.PWM(pins.p['MOTOR2E'], params.p['MOTOR_PWM_FREQ'])
+        self.E1 = GPIO.PWM(pins.p['MOTOR1E'], params.p['MOTOR_DEFAULT_PWM_FREQ'])
+        self.E2 = GPIO.PWM(pins.p['MOTOR2E'], params.p['MOTOR_DEFAULT_PWM_FREQ'])
 
-        # Change speed of motor by controlling duty cycle
-        # def speed(num):
-        #     E1.ChangeDutyCycle(num)
-        #     E2.ChangeDutyCycle(num + MOTOR_OFFSET_PWR)
-        #     return
+    def change_dc(self, new_dc):
+        '''
+            Change dc (duty cycle) of the motor (0 - 100)
+        '''
+        self.E1.ChangeDutyCycle(new_dc[0])
+        self.E2.ChangeDutyCycle(new_dc[1])
+        
+    def change_freq(self, new_freq):
+        '''
+            Change frequency of the motor PWM
+        '''
+        self.E1.ChangeFrequency(new_freq[0])
+        self.E2.ChangeFrequency(new_freq[1])
 
+    def e_brake(self):
+        '''
+            Stop motors by outputting low signal
+        '''
+        print "Stopping Motors..."
+        GPIO.output(pins.p['MOTOR1E'], GPIO.LOW)
+        GPIO.output(pins.p['MOTOR2E'], GPIO.LOW)
 
-    def move_bot(self, direction, distance=0, num=params.p['MOTOR_DEFAULT_PWR'], continuous_mode=False):
+    def nitro_boost(self):
+        '''
+            Runs motor at highest power by outputting high signal
+        '''
+        GPIO.output(pins.p['MOTOR1E'], GPIO.HIGH)
+        GPIO.output(pins.p['MOTOR2E'], GPIO.HIGH)
+
+    def move_bot(self, direction, distance=0, dc=params.p['MOTOR_DEFAULT_PWM_DC'], continuous_mode=False):
         '''
             Moves the robot (runs motors) given motion primitives
         '''
 
-        # Start both sowftware PWMs
-        self.E1.start(num)
-        self.E2.start(num + params.p['MOTOR_OFFSET_PWR'])
-
-        # Alternatively send a HIGH signal for 100%
-        # GPIO.output(Motor1E, GPIO.HIGH)
-        # GPIO.output(Motor2E, GPIO.HIGH)
+        # Start both sowftware PWMs (dc is the duty cycle)
+        self.E1.start(dc)
+        self.E2.start(dc)
 
         # # Debug print
-        # logger.debug('Continuous_mode: ', continuous_mode)
+        # print('Continuous_mode: ', continuous_mode)
 
-        if direction == 'forward':
-            # logger.info('Going forwards ...')
+        if direction == Move.FORWARD:
+            # print('Going forwards ...')
 
             GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)
             GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)
@@ -73,8 +93,8 @@ class Motor(object):
             if not continuous_mode:
                 sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])
 
-        elif direction == 'backward':
-            # logger.info('Going backwards ...')
+        elif direction == Move.BACKWARD:
+            # print('Going backwards ...')
 
             GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)
             GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)
@@ -85,8 +105,8 @@ class Motor(object):
             if not continuous_mode:
                 sleep((distance / params.p['DIST_PER_MOVE']) * params.p['SEC_PER_MOVE'])
 
-        elif direction == 'left':
-            # logger.info('Turning Left ...')
+        elif direction == Move.LEFT:
+            # print('Turning Left ...')
 
             GPIO.output(pins.p['MOTOR1A'], GPIO.HIGH)
             GPIO.output(pins.p['MOTOR1B'], GPIO.LOW)
@@ -97,8 +117,8 @@ class Motor(object):
             if not continuous_mode:
                 sleep((distance / params.p['DEG_PER_TURN']) * params.p['SEC_PER_TURN'])
 
-        elif direction == 'right':
-            # logger.info('Turning Right ...')
+        elif direction == Move.RIGHT:
+            # print('Turning Right ...')
 
             GPIO.output(pins.p['MOTOR1A'], GPIO.LOW)
             GPIO.output(pins.p['MOTOR1B'], GPIO.HIGH)
@@ -113,11 +133,7 @@ class Motor(object):
             print "ERROR: Wrong direction input"
 
         if not continuous_mode:
-
-            # Stop motors by outputting low signal
-            print "Stopping Motors..."
-            GPIO.output(pins.p['MOTOR1E'], GPIO.LOW)
-            GPIO.output(pins.p['MOTOR2E'], GPIO.LOW)
+            self.e_brake()
 
         return
 
@@ -131,35 +147,24 @@ class Motor(object):
         self.E1.stop()
         self.E2.stop()
 
-        # Stop motors by outputting low signal
-        print "Stopping Motors..."
-        GPIO.output(pins.p['MOTOR1E'], GPIO.LOW)
-        GPIO.output(pins.p['MOTOR2E'], GPIO.LOW)
+        # Kill motors just to be sure
+        self.e_brake()
 
-        # Clean any loose ends in the GPIO
-        print "Clean up GPIO ..."
-        GPIO.cleanup()
+        # # Clean any loose ends in the GPIO
+        # print "Clean up GPIO ..."
+        # GPIO.cleanup()
 
-# Testing code, run with: python navigation.py
+# Testing code, run with: python motor.py
 if __name__ == '__main__':
 
     # Create motor object
     move = Motor()
 
+    # Move robot back and forth for testing and tuning
+    move.moveBot('forward', 1)  # Move forward 1 unit (10 cm)
     sleep(1)
-
-    move.moveBot('forward', 1, params.p['MOTOR_DEFAULT_PWR'])  # Move forward 1 unit (10 cm)
-
+    move.moveBot('left', 2*math.pi)  # Make a 360 degree turn
     sleep(1)
-
-    move.moveBot('left', (2.0 * math.pi), params.p['MOTOR_DEFAULT_PWR'])  # Make a 360 degree turn
-
+    move.moveBot('backwards', 1)
     sleep(1)
-
-    move.moveBot('forward', 1, params.p['MOTOR_DEFAULT_PWR'])
-
-    sleep(1)
-
-    move.moveBot('right', (2.0 * math.pi), params.p['MOTOR_DEFAULT_PWR']) # Make a 360 degree turn
-
-    del move
+    move.moveBot('right', 2*math.pi) # Make a 360 degree turn
